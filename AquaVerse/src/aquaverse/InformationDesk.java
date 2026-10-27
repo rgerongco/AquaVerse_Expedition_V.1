@@ -41,14 +41,22 @@ public class InformationDesk {
         double regularTicketPrice = 150.00;
         double totalPriceOfTicket = ticketNumber * regularTicketPrice;
 
-        boolean discountApplicable = discountRequirement.equals("yes");
-
-        if (discountApplicable) {
-            System.out.println("Apply 20% Discount");
-            //GET THE 20% OF THE 150
-            double discountedTicketPrice = regularTicketPrice * 0.20;
-            //SUBTRACT FROM THE REGULAR PRICE
-            totalPriceOfTicket = totalPriceOfTicket - discountedTicketPrice;
+        boolean done = false;
+        while (!done) {
+            if (discountRequirement.equals("yes")) {
+                System.out.println("Apply 20% Discount");
+                //GET THE 20% OF THE 150
+                double discountedTicketPrice = regularTicketPrice * 0.20;
+                done = true;
+                //SUBTRACT FROM THE REGULAR PRICE
+                totalPriceOfTicket = totalPriceOfTicket - discountedTicketPrice;
+            } else if (discountRequirement.equals("no")) {
+                totalPriceOfTicket = regularTicketPrice; 
+                done = true;
+            } else {
+                System.out.println("Input proper choice.");
+                break;
+            }
         }
 
         //TOTAL PRICE SHOWN
@@ -66,7 +74,7 @@ public class InformationDesk {
             System.out.print("Choose payment method: ");
             paymentMethod = sc.nextLine();
 
-            if (paymentMethod.equals("1") || paymentMethod.equals("") || paymentMethod.equals("3")) {
+            if (paymentMethod.equals("1") || paymentMethod.equals("2") || paymentMethod.equals("3")) {
                 pay = true;
             } else {
                 System.out.println("Invalid choice.");
@@ -122,3 +130,4 @@ public class InformationDesk {
         return true;
     }
 }
+
