@@ -7,21 +7,19 @@ import java.util.Scanner;
 
 public class LoginAuthentication {
 
-    //Creation of the Accounts File
+    // creating the accounts file
     static String FILE_NAME = "accounts.txt";
 
-    //To know if USER? STAFF? ADMIN?
+    // to check if user/staff/admin
     static String loggedRole = "";
 
-    //Checking if username already exists
+    // checking if the name already existed
     static boolean nameExists(String name) {
-
-        //ADMIN and STAFF account already pre-defined for 
-        //role-based but will change once account management is here
+        // pre-defined admin
         if (name.equals("admin")) {
             return true;
         }
-
+        // pre-defined staff
         if (name.equals("staff")) {
             return true;
         }
@@ -31,7 +29,7 @@ public class LoginAuthentication {
             return false;
         }
 
-        //Reading the notepad if there's an existing username
+        // reading the notepad if there's an existing username
         try {
             Scanner reader = new Scanner(file);
             while (reader.hasNextLine()) {
@@ -49,9 +47,9 @@ public class LoginAuthentication {
         return false;
     }
 
-    //Checks if the username and password are inside of the file
+    // checks if the username and password are inside of the file
     static String checkLogin(String name, String password) {
-        //Pre-defined ADMIN and STAFF
+        // pre-defined admin and staff
         if (name.equals("admin") && password.equals("admin123")) {
             return "admin";
         }
@@ -65,7 +63,7 @@ public class LoginAuthentication {
             return "";
         }
 
-        //Reading the notepad to check if there's an existing name with its password
+        // reading the notepad to check if there's an existing name with its password
         try {
             Scanner reader = new Scanner(file);
             while (reader.hasNextLine()) {
@@ -83,7 +81,7 @@ public class LoginAuthentication {
         return "";
     }
 
-    // Saving a new account
+    // save new account
     static void saveAccount(String name, String password, String phone) {
         try {
             FileWriter writer = new FileWriter(FILE_NAME, true);
@@ -94,7 +92,7 @@ public class LoginAuthentication {
         }
     }
 
-    //Runs the login
+    // run login
     public static String login(Scanner sc) {
 
         boolean loggedIn = false;
@@ -118,7 +116,7 @@ public class LoginAuthentication {
 
             else if (answer.equals("2")) {
 
-                // ---------- SIGN UP ----------
+                // sign up dashboard
                 boolean created = false;
                 while (!created) {
                     System.out.println("--------------------------------");
@@ -155,7 +153,8 @@ public class LoginAuthentication {
                 }
 
             } else if (answer.equals("1")) {
-
+                
+                // login dashboard
                 System.out.println("--------------------------------");
                 System.out.println("|             LOGIN            |");
                 System.out.println("--------------------------------");
@@ -165,6 +164,7 @@ public class LoginAuthentication {
                 String password = sc.nextLine();
                 System.out.println("--------------------------------");
 
+                // role-based login dashboard
                 String role = checkLogin(name, password);
                 if (!role.equals("")) {
                     System.out.println("- Login Successful");
