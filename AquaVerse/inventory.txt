@@ -1,0 +1,41 @@
+Gift Shop|Turtles|20
+Gift Shop|Starfish|20
+Gift Shop|Axolotl|20
+Gift Shop|Whale|20
+Gift Shop|Stingray|20
+Gift Shop|Shark|20
+Gift Shop|Jellyfish|20
+Gift Shop|Eco-Shark|20
+Gift Shop|Eco-Whale|20
+Gift Shop|Eco-Jellyfish|20
+Gift Shop|Ocean-Theme Puzzles|20
+Gift Shop|Bath Toys & Water Play|20
+Gift Shop|Magnetic Fishing Sets|20
+Gift Shop|Graphic & Novelty Tees|20
+Gift Shop|Sleepwear & Loungewear|20
+Gift Shop|Baby & Toddler Wear|20
+Gift Shop|Outerwear & Accessories|20
+Cafe|Adobo|20
+Cafe|Silog Meals|20
+Cafe|Fried Fish|20
+Cafe|Carbonara|20
+Cafe|Pinoy Style Spaghetti|20
+Cafe|Lasagna|20
+Cafe|Americano|20
+Cafe|Espresso|20
+Cafe|Cappuccino|20
+Cafe|Macchiato|20
+Cafe|Matcha|20
+Cafe|Green Tea|20
+Cafe|Sweet Tea|20
+Cafe|Yellow Tea|20
+Cafe|Coke|20
+Cafe|Sprite|20
+Cafe|Royal|20
+Cafe|Water|20
+Cafe|Halo Halo|20
+Cafe|Ube Cake|20
+Cafe|Red Velvet Cake|20
+Cafe|Cheese Cake|20
+Cafe|Chocolate Cake|20
+Cafe|Leche Flan|20

@@ -1,0 +1,24 @@
+Food|-|Adobo|120
+Food|-|Silog Meals|110
+Food|-|Fried Fish|130
+Food|-|Carbonara|150
+Food|-|Pinoy Style Spaghetti|120
+Food|-|Lasagna|180
+Drinks|Coffee|Americano|90
+Drinks|Coffee|Espresso|80
+Drinks|Coffee|Cappuccino|110
+Drinks|Coffee|Macchiato|120
+Drinks|Tea|Matcha|130
+Drinks|Tea|Green Tea|70
+Drinks|Tea|Sweet Tea|60
+Drinks|Tea|Yellow Tea|80
+Drinks|Soft Drinks|Coke|45
+Drinks|Soft Drinks|Sprite|45
+Drinks|Soft Drinks|Royal|45
+Drinks|Water|Water|25
+Dessert/Snack|-|Halo Halo|110
+Dessert/Snack|-|Ube Cake|120
+Dessert/Snack|-|Red Velvet Cake|130
+Dessert/Snack|-|Cheese Cake|140
+Dessert/Snack|-|Chocolate Cake|120
+Dessert/Snack|-|Leche Flan|80
