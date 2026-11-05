@@ -3,6 +3,7 @@ package aquaverse;
 import java.io.IOException;
 import java.util.Scanner;
 
+// Gift Shop flowchart - multiple items, each with a quantity of 1
 public class GiftShop {
 
     // creation of gift shop
