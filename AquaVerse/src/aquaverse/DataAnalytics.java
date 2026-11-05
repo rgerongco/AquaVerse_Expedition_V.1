@@ -8,8 +8,6 @@ import java.util.Scanner;
 
 public class DataAnalytics {
 
-    // sales.txt  -> date,category,amount     (category is Gift Shop or Cafe)
-    // visits.txt -> date,category            (category is one of the exhibit categories)
     static String SALES_FILE = "sales.txt";
     static String VISITS_FILE = "visits.txt";
 
@@ -23,15 +21,17 @@ public class DataAnalytics {
 
     static String[] PERIODS = {"Daily", "Weekly", "Monthly", "Every Six Months", "Yearly"};
 
-    // ---------- RECORDING (called by GiftShop, Cafe and Exhibitions) ----------
+    // record the sale and its amount
     public static void recordSale(String category, double amount) {
         addLine(SALES_FILE, LocalDate.now() + "," + category + "," + String.format("%.2f", amount));
     }
 
+    // record a visit to an exhibit category
     public static void recordVisit(String category) {
         addLine(VISITS_FILE, LocalDate.now() + "," + category);
     }
 
+    // save a new record to the notepad file
     static void addLine(String fileName, String line) {
         try {
             FileWriter writer = new FileWriter(fileName, true);
@@ -42,7 +42,7 @@ public class DataAnalytics {
         }
     }
 
-    // Reads every line of a file into an array
+    // read all records from the notepad file
     static String[] readLines(String fileName) {
         File file = new File(fileName);
         if (!file.exists()) {
@@ -50,7 +50,7 @@ public class DataAnalytics {
         }
 
         try {
-            // First pass: count the lines
+            // count the number of records in the file
             int count = 0;
             Scanner counter = new Scanner(file);
             while (counter.hasNextLine()) {
@@ -60,7 +60,7 @@ public class DataAnalytics {
             }
             counter.close();
 
-            // Second pass: put the lines in the array
+            // place all records inside the array
             String[] lines = new String[count];
             int i = 0;
             Scanner reader = new Scanner(file);
@@ -79,7 +79,7 @@ public class DataAnalytics {
         return new String[0];
     }
 
-    // ---------- MENU (admin only) ----------
+    // show the data analytics menu
     public static void showDataAnalytics(Scanner sc) {
         boolean back = false;
 
@@ -93,6 +93,7 @@ public class DataAnalytics {
             System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
+            // choose which data to view
             if (answer.equals("0")) {
                 back = true;
             } else if (answer.equals("1") || answer.equals("2")) {
@@ -111,7 +112,7 @@ public class DataAnalytics {
         }
     }
 
-    // Returns 1-5 for the chosen time period, or 0 to go back
+    // choose the time period for the report
     static int choosePeriod(Scanner sc) {
         System.out.println();
         System.out.println("---------------------SELECT TIME PERIOD---------------------");
@@ -125,6 +126,7 @@ public class DataAnalytics {
         System.out.print("Choose: ");
         String answer = sc.nextLine().trim();
 
+        // check the selected time period
         if (answer.equals("1")) return 1;
         if (answer.equals("2")) return 2;
         if (answer.equals("3")) return 3;
@@ -136,7 +138,7 @@ public class DataAnalytics {
         return 0;
     }
 
-    // The first day included in the chosen time period (the last day is today)
+    // get the starting date of the selected time period
     static LocalDate getStartDate(int period) {
         LocalDate today = LocalDate.now();
         if (period == 1) {
@@ -152,17 +154,19 @@ public class DataAnalytics {
         }
     }
 
+    // check if the record is within the selected time period
     static boolean inPeriod(LocalDate date, LocalDate start) {
         return !date.isBefore(start) && !date.isAfter(LocalDate.now());
     }
 
-    // ---------- TOTAL SALES ----------
+    // compute and display the total sales
     static void showSales(int period, LocalDate start) {
         String[] lines = readLines(SALES_FILE);
         double giftShop = 0;
         double cafe = 0;
         int count = 0;
 
+        // read the sales records within the selected period
         for (int i = 0; i < lines.length; i++) {
             String[] p = lines[i].split(",");
             if (p.length < 3) {
@@ -184,6 +188,7 @@ public class DataAnalytics {
             }
         }
 
+        // display the sales report
         System.out.println();
         System.out.println("------------------------TOTAL SALES-------------------------");
         System.out.printf("| %-56.56s |%n", "Period: " + PERIODS[period - 1]);
@@ -193,6 +198,7 @@ public class DataAnalytics {
         if (count == 0) {
             System.out.println("| - No matching records found.                             |");
         } else {
+            // show the sales of each shop and their total
             System.out.printf("| %-56.56s |%n", "- Gift Shop: PHP " + String.format("%.2f", giftShop));
             System.out.printf("| %-56.56s |%n", "- Cafe:      PHP " + String.format("%.2f", cafe));
             System.out.println("|----------------------------------------------------------|");
@@ -202,12 +208,13 @@ public class DataAnalytics {
         System.out.println("------------------------------------------------------------");
     }
 
-    // ---------- TOTAL VISITS ----------
+    // count and display the total visits
     static void showVisits(int period, LocalDate start) {
         String[] lines = readLines(VISITS_FILE);
         int[] counts = new int[VISIT_CATEGORIES.length];
         int total = 0;
 
+        // count the visits for each exhibit category
         for (int i = 0; i < lines.length; i++) {
             String[] p = lines[i].split(",");
             if (p.length < 2) {
@@ -228,6 +235,7 @@ public class DataAnalytics {
             }
         }
 
+        // display the visits report
         System.out.println();
         System.out.println("------------------------TOTAL VISITS------------------------");
         System.out.printf("| %-56.56s |%n", "Period: " + PERIODS[period - 1]);
@@ -237,6 +245,7 @@ public class DataAnalytics {
         if (total == 0) {
             System.out.println("| - No matching records found.                             |");
         } else {
+            // show the number of visits for each category
             for (int j = 0; j < VISIT_CATEGORIES.length; j++) {
                 System.out.printf("| %-56.56s |%n", "- " + VISIT_CATEGORIES[j] + ": " + counts[j]);
             }
