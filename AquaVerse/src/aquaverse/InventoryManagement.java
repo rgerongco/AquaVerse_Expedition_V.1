@@ -111,12 +111,13 @@ public class InventoryManagement {
         boolean back = false;
 
         while (!back) {
-            System.out.println("\n-------------------INVENTORY MANAGEMENT-------------------");
-            System.out.println("|\t[1] Gift Shop\t\t\t\t\t|");
-            System.out.println("|\t[2] Cafe\t\t\t\t\t|");
-            System.out.println("|\t[0] Back\t\t\t\t\t|");
-            System.out.println("-----------------------------------------------------------");
-            System.out.print("\tChoose: ");
+            System.out.println();
+            System.out.println("--------------------INVENTORY MANAGEMENT--------------------");
+            System.out.println("| [1] Gift Shop                                            |");
+            System.out.println("| [2] Cafe                                                 |");
+            System.out.println("| [0] Back                                                 |");
+            System.out.println("------------------------------------------------------------");
+            System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
             if (answer.equals("1")) {
@@ -136,18 +137,25 @@ public class InventoryManagement {
         boolean back = false;
 
         while (!back) {
-            System.out.println("\n-------------------" + SHOPS[shop].toUpperCase() + " INVENTORY-------------------");
-            System.out.println("|\t[1] View Stock");
-            System.out.println("|\t[2] Update Stock");
+            System.out.println();
 
-            if (admin) {
-                System.out.println("|\t[3] Add Product");
-                System.out.println("|\t[4] Delete Product");
+            if (shop == 0) {
+                System.out.println("--------------------GIFT SHOP INVENTORY---------------------");
+            } else {
+                System.out.println("-----------------------CAFE INVENTORY-----------------------");
             }
 
-            System.out.println("|\t[0] Back");
-            System.out.println("-----------------------------------------------------------");
-            System.out.print("\tChoose: ");
+            System.out.println("| [1] View Stock                                           |");
+            System.out.println("| [2] Update Stock                                         |");
+
+            if (admin) {
+                System.out.println("| [3] Add Product                                          |");
+                System.out.println("| [4] Delete Product                                       |");
+            }
+
+            System.out.println("| [0] Back                                                 |");
+            System.out.println("------------------------------------------------------------");
+            System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
             if (answer.equals("1")) {
@@ -179,7 +187,13 @@ public class InventoryManagement {
             return products;
         }
 
-        System.out.println("\n----------------------" + SHOPS[shop].toUpperCase() + " STOCK----------------------");
+        System.out.println();
+
+        if (shop == 0) {
+            System.out.println("----------------------GIFT SHOP STOCK-----------------------");
+        } else {
+            System.out.println("-------------------------CAFE STOCK-------------------------");
+        }
 
         for (int i = 0; i < products.length; i++) {
             String place = products[i][0];
@@ -197,11 +211,16 @@ public class InventoryManagement {
                 note = "  * LOW *";
             }
 
-            System.out.println("[" + (i + 1) + "] " + products[i][2] + " (" + place + ") - PHP "
-                    + products[i][3] + " | Stock: " + stock + note);
+            if (i > 0) {
+                System.out.println("|----------------------------------------------------------|");
+            }
+
+            System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + products[i][2] + " - PHP " + String.format("%.2f", DataFile.toDouble(products[i][3])));
+            System.out.printf("| %-56.56s |%n", "    " + place);
+            System.out.printf("| %-56.56s |%n", "    Stock: " + stock + note);
         }
 
-        System.out.println("-----------------------------------------------------------");
+        System.out.println("------------------------------------------------------------");
         return products;
     }
 
@@ -220,7 +239,7 @@ public class InventoryManagement {
                 return;
             }
 
-            System.out.print("\tEnter product number to update (0 to go back): ");
+            System.out.print("Enter product number to update (0 to go back): ");
             int number = DataFile.toInt(sc.nextLine().trim());
 
             if (number == 0) {
@@ -231,7 +250,7 @@ public class InventoryManagement {
                 String item = products[number - 1][2];
                 System.out.println("\n- " + item + " - Current Stock: " + getStock(SHOPS[shop], item));
 
-                System.out.print("\tNew stock quantity (0-" + MAX_STOCK + ", or C to cancel): ");
+                System.out.print("New stock quantity (0-" + MAX_STOCK + ", or C to cancel): ");
                 String text = sc.nextLine().trim();
 
                 if (text.equalsIgnoreCase("c")) {
@@ -241,7 +260,7 @@ public class InventoryManagement {
                     if (newStock < 0 || newStock > MAX_STOCK) {
                         System.out.println("\n- Stock must be a whole number from 0 to " + MAX_STOCK + ".");
                     } else {
-                        System.out.print("\tUpdate stock of " + item + " to " + newStock + "? (yes/no): ");
+                        System.out.print("Update stock of " + item + " to " + newStock + "? (yes/no): ");
                         if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
                             setStock(SHOPS[shop], item, newStock);
                             System.out.println("\n- Stock Updated.");
@@ -275,7 +294,13 @@ public class InventoryManagement {
     static void addProduct(Scanner sc, int shop) {
         String[][] rows = DataFile.load(SHOP_FILES[shop], 4);
 
-        System.out.println("\n-------------------ADD PRODUCT TO " + SHOPS[shop].toUpperCase() + "-------------------");
+        System.out.println();
+
+        if (shop == 0) {
+            System.out.println("------------------ADD PRODUCT TO GIFT SHOP------------------");
+        } else {
+            System.out.println("--------------------ADD PRODUCT TO CAFE---------------------");
+        }
 
         // ----- category -----
         String[] categories = DataFile.distinct(rows, 0);
@@ -284,13 +309,16 @@ public class InventoryManagement {
         boolean newCategory = false;
 
         if (categories.length > 0) {
+            System.out.println("| Categories:                                              |");
+
             for (int i = 0; i < categories.length; i++) {
-                System.out.println("[" + (i + 1) + "] " + categories[i]);
+                System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + categories[i]);
             }
-            System.out.println("[" + (categories.length + 1) + "] New Category");
-            System.out.println("[0] Cancel");
-            System.out.println("-----------------------------------------------------------");
-            System.out.print("\tChoose a category: ");
+
+            System.out.printf("| %-56.56s |%n", "[" + (categories.length + 1) + "] New Category");
+            System.out.println("| [0] Cancel                                               |");
+            System.out.println("------------------------------------------------------------");
+            System.out.print("Choose a category: ");
             int pick = DataFile.toInt(sc.nextLine().trim());
 
             if (pick == 0) {
@@ -311,14 +339,14 @@ public class InventoryManagement {
         }
 
         if (newCategory) {
-            category = askText(sc, "\tNew category name (0 to cancel): ");
+            category = askText(sc, "New category name (0 to cancel): ");
             if (category == null) {
                 System.out.println("\n- Add cancelled.");
                 return;
             }
-            System.out.print("\tWill this category have sub-groups? (yes/no): ");
+            System.out.print("Will this category have sub-groups? (yes/no): ");
             if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
-                group = askText(sc, "\tSub-group name (0 to cancel): ");
+                group = askText(sc, "Sub-group name (0 to cancel): ");
                 if (group == null) {
                     System.out.println("\n- Add cancelled.");
                     return;
@@ -330,13 +358,19 @@ public class InventoryManagement {
             String[] groups = DataFile.distinct(inCategory, 1);
 
             if (!groups[0].equals("-")) {
+                System.out.println();
+                System.out.println("-------------------------SUB-GROUPS-------------------------");
+                System.out.printf("| %-56.56s |%n", category.toUpperCase());
+                System.out.println("|----------------------------------------------------------|");
+
                 for (int i = 0; i < groups.length; i++) {
-                    System.out.println("[" + (i + 1) + "] " + groups[i]);
+                    System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + groups[i]);
                 }
-                System.out.println("[" + (groups.length + 1) + "] New Sub-group");
-                System.out.println("[0] Cancel");
-                System.out.println("-----------------------------------------------------------");
-                System.out.print("\tChoose a sub-group: ");
+
+                System.out.printf("| %-56.56s |%n", "[" + (groups.length + 1) + "] New Sub-group");
+                System.out.println("| [0] Cancel                                               |");
+                System.out.println("------------------------------------------------------------");
+                System.out.print("Choose a sub-group: ");
                 int pick = DataFile.toInt(sc.nextLine().trim());
 
                 if (pick == 0) {
@@ -350,7 +384,7 @@ public class InventoryManagement {
                 if (pick <= groups.length) {
                     group = groups[pick - 1];
                 } else {
-                    group = askText(sc, "\tNew sub-group name (0 to cancel): ");
+                    group = askText(sc, "New sub-group name (0 to cancel): ");
                     if (group == null) {
                         System.out.println("\n- Add cancelled.");
                         return;
@@ -362,7 +396,7 @@ public class InventoryManagement {
         // ----- product name -----
         String name = "";
         while (name.isEmpty()) {
-            name = askText(sc, "\tProduct name (0 to cancel): ");
+            name = askText(sc, "Product name (0 to cancel): ");
             if (name == null) {
                 System.out.println("\n- Add cancelled.");
                 return;
@@ -376,7 +410,7 @@ public class InventoryManagement {
         // ----- price -----
         double price = -1;
         while (price <= 0) {
-            System.out.print("\tPrice in PHP (0 to cancel): ");
+            System.out.print("Price in PHP (0 to cancel): ");
             String text = sc.nextLine().trim();
             if (text.equals("0")) {
                 System.out.println("\n- Add cancelled.");
@@ -389,13 +423,12 @@ public class InventoryManagement {
             }
         }
 
-        String priceText = (price == Math.floor(price))
-                ? String.valueOf((long) price) : String.format("%.2f", price);
+        String priceText = String.format("%.2f", price);
 
         // ----- starting stock -----
         int stock = -1;
         while (stock < 0) {
-            System.out.print("\tStarting stock (0-" + MAX_STOCK + "): ");
+            System.out.print("Starting stock (0-" + MAX_STOCK + "): ");
             stock = DataFile.toInt(sc.nextLine().trim());
             if (stock < 0 || stock > MAX_STOCK) {
                 System.out.println("\n- Stock must be a whole number from 0 to " + MAX_STOCK + ".");
@@ -404,18 +437,19 @@ public class InventoryManagement {
         }
 
         // ----- confirm -----
-        System.out.println("\n----------------------PRODUCT DETAILS----------------------");
-        System.out.println("- Category: " + category);
+        System.out.println();
+        System.out.println("----------------------PRODUCT DETAILS-----------------------");
+        System.out.printf("| %-56.56s |%n", "Category: " + category);
 
         if (!group.equals("-")) {
-            System.out.println("- Sub-group: " + group);
+            System.out.printf("| %-56.56s |%n", "Sub-group: " + group);
         }
 
-        System.out.println("- Product: " + name);
-        System.out.println("- Price: PHP " + priceText);
-        System.out.println("- Stock: " + stock);
+        System.out.printf("| %-56.56s |%n", "Product: " + name);
+        System.out.printf("| %-56.56s |%n", "Price: PHP " + priceText);
+        System.out.printf("| %-56.56s |%n", "Stock: " + stock);
         System.out.println("------------------------------------------------------------");
-        System.out.print("\tAdd product? (yes/no): ");
+        System.out.print("Add product? (yes/no): ");
 
         if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
             System.out.println("\n- Add cancelled.");
@@ -470,7 +504,7 @@ public class InventoryManagement {
                 return;
             }
 
-            System.out.print("\tEnter product number to delete (0 to go back): ");
+            System.out.print("Enter product number to delete (0 to go back): ");
             int number = DataFile.toInt(sc.nextLine().trim());
 
             if (number == 0) {
@@ -481,7 +515,7 @@ public class InventoryManagement {
                 System.out.println("\n- The last product of the " + SHOPS[shop] + " cannot be deleted.");
             } else {
                 String item = products[number - 1][2];
-                System.out.print("\tDelete " + item + "? (yes/no): ");
+                System.out.print("Delete " + item + "? (yes/no): ");
 
                 if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
                     String[][] kept = new String[products.length - 1][];
