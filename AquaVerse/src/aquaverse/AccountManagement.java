@@ -1,393 +1,203 @@
 package aquaverse;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class AccountManagement {
+public class AquaVerse {
 
-    // Same file that LoginAuthentication uses.
-    // Visitor line: name,password,phone,user
-    // Staff line:   name,password,phone,staff,id,age,email
-    // (the extra columns are at the end, so the login still works as before)
-    static String FILE_NAME = "accounts.txt";
-
-    // Reads every account line of accounts.txt into an array
-    static String[] readAccounts() {
-        File file = new File(FILE_NAME);
-        if (!file.exists()) {
-            return new String[0];
-        }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
 
         try {
-            // First pass: count the lines
-            int count = 0;
-            Scanner counter = new Scanner(file);
-            while (counter.hasNextLine()) {
-                if (!counter.nextLine().trim().isEmpty()) {
-                    count++;
-                }
-            }
-            counter.close();
-
-            // Second pass: put the lines in the array
-            String[] lines = new String[count];
-            int i = 0;
-            Scanner reader = new Scanner(file);
-            while (reader.hasNextLine()) {
-                String line = reader.nextLine();
-                if (!line.trim().isEmpty()) {
-                    lines[i] = line;
-                    i++;
-                }
-            }
-            reader.close();
-            return lines;
+            Exhibitions.createFiles();
         } catch (IOException e) {
-            System.out.println("Could not read " + FILE_NAME);
+            System.out.println("Could not create visitors.txt");
         }
-        return new String[0];
-    }
 
-    // Writes the lines back to accounts.txt.
-    // The line at position "skip" is left out (use -1 to keep every line).
-    static void saveAll(String[] lines, int skip) {
+        // Each product here gets updated on the notepad
+        InventoryManagement.syncStock();
+
+        // This checks how a user is logged in whether they can be a user/staff/admin
         try {
-            FileWriter writer = new FileWriter(FILE_NAME);
-            for (int i = 0; i < lines.length; i++) {
-                if (i != skip) {
-                    writer.write(lines[i] + "\n");
+            while (true) {
+                LoginAuthentication.loggedRole = "";
+                String name = LoginAuthentication.login(sc);
+                
+                // Exit chosen on the Login page
+                if (name.isEmpty()) {
+                    break;   
                 }
+                runDashboard(sc, name, LoginAuthentication.loggedRole);
+                System.out.println("\nLogged out. Returning to the login page...\n");
             }
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("Could not save to " + FILE_NAME);
+        } catch (NoSuchElementException e) {
+            // The input stream ended, so there is nothing more to read
         }
-    }
 
-    // Adds one new line to the end of accounts.txt
-    static void saveNew(String line) {
-        try {
-            FileWriter writer = new FileWriter(FILE_NAME, true);
-            writer.write(line + "\n");
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("Could not save to " + FILE_NAME);
-        }
-    }
-
-    // Menu of the Account Management module (admin only)
-    public static void showAccountManagement(Scanner sc) {
-        boolean back = false;
-
-        while (!back) {
-            System.out.println();
-            System.out.println("---------------------ACCOUNT MANAGEMENT---------------------");
-            System.out.println("| [1] View Accounts                                        |");
-            System.out.println("| [2] Create Staff Account                                 |");
-            System.out.println("| [3] Update Account                                       |");
-            System.out.println("| [4] Delete Account                                       |");
-            System.out.println("| [0] Back                                                 |");
-            System.out.println("------------------------------------------------------------");
-            System.out.print("Choose: ");
-
-            String answer = sc.nextLine().trim();
-
-            if (answer.equals("1")) {
-                viewAccounts();
-            } else if (answer.equals("2")) {
-                createStaff(sc);
-            } else if (answer.equals("3")) {
-                updateAccount(sc);
-            } else if (answer.equals("4")) {
-                deleteAccount(sc);
-            } else if (answer.equals("0")) {
-                back = true;
-            } else {
-                System.out.println("Please enter the value of your choice.");
-            }
-        }
-    }
-
-    // ---------- VIEW ----------
-    static void viewAccounts() {
-        String[] lines = readAccounts();
-
+        // The output once exiting the system
         System.out.println();
-        System.out.println("--------------------REGISTERED ACCOUNTS---------------------");
-        System.out.println("| - admin (admin) - built-in account                       |");
-        System.out.println("| - staff (staff) - built-in account                       |");
-
-        for (int i = 0; i < lines.length; i++) {
-            String[] p = lines[i].split(",");
-            if (p.length < 4) {
-                continue;
-            }
-
-            System.out.println("|----------------------------------------------------------|");
-            System.out.printf("| %-56.56s |%n", "- " + p[0] + " (" + p[3] + ")");
-            System.out.printf("| %-56.56s |%n", "    Phone: " + p[2]);
-
-            if (p.length >= 7) {
-                System.out.printf("| %-56.56s |%n", "    Staff ID: " + p[4] + " | Age: " + p[5]);
-                System.out.printf("| %-56.56s |%n", "    Email: " + p[6]);
-            }
-        }
-
+        System.out.println("-------------------------THANK YOU--------------------------");
+        System.out.println("|            Thank you for visiting AquaVerse!             |");
         System.out.println("------------------------------------------------------------");
     }
 
-    // ---------- CREATE ----------
-    static void createStaff(Scanner sc) {
-        boolean created = false;
+    // Running the dashboard by roles
+    static void runDashboard(Scanner sc, String name, String role) {
+        boolean done = false;
 
-        while (!created) {
-            System.out.println();
-            System.out.println("--------------------CREATE STAFF ACCOUNT--------------------");
-            System.out.print("Staff ID: ");
-            String id = sc.nextLine().trim();
-            System.out.print("Name: ");
-            String name = sc.nextLine().trim();
-            System.out.print("Age: ");
-            String age = sc.nextLine().trim();
-            System.out.print("Password: ");
-            String password = sc.nextLine().trim();
-            System.out.print("Phone number: ");
-            String phone = sc.nextLine().trim();
-            System.out.print("Email: ");
-            String email = sc.nextLine().trim();
-            System.out.println("------------------------------------------------------------");
+        while (!done) {
+            try {
+                System.out.println();
 
-            String error = checkDetails(name, age, password, phone, email, true);
+                if (role.equals("user")) {
+                    System.out.println("-------------------------DASHBOARD--------------------------");
+                    System.out.printf("| %-56.56s |%n", "Visitor: " + name);
+                    System.out.println("|----------------------------------------------------------|");
+                    System.out.println("| [1] Information Desk                                     |");
+                    System.out.println("| [2] Exhibitions                                          |");
+                    System.out.println("| [3] Gift Shop                                            |");
+                    System.out.println("| [4] Cafe                                                 |");
+                    System.out.println("| [0] Exit                                                 |");
+                    System.out.println("------------------------------------------------------------");
 
-            if (error.isEmpty() && (id.isEmpty() || id.contains(","))) {
-                error = "Staff ID must be filled and cannot have commas";
-            } else if (error.isEmpty() && idExists(readAccounts(), id)) {
-                error = "Staff ID already exists";
-            } else if (error.isEmpty() && LoginAuthentication.nameExists(name)) {
-                error = "Account already exists. Please create another one.";
-            }
+                } else if (role.equals("staff")) {
+                    System.out.println("-------------------------DASHBOARD--------------------------");
+                    System.out.printf("| %-56.56s |%n", "Staff: " + name);
+                    System.out.println("|----------------------------------------------------------|");
+                    System.out.println("| [1] Information Desk                                     |");
+                    System.out.println("| [2] Exhibitions                                          |");
+                    System.out.println("| [3] Gift Shop                                            |");
+                    System.out.println("| [4] Cafe                                                 |");
+                    System.out.println("| [5] Care and Maintenance Facilities                      |");
+                    System.out.println("| [6] Inventory Management                                 |");
+                    System.out.println("| [0] Exit                                                 |");
+                    System.out.println("------------------------------------------------------------");
 
-            if (!error.isEmpty()) {
-                System.out.println(error);
+                } else if (role.equals("admin")) {
+                    System.out.println("-------------------------DASHBOARD--------------------------");
+                    System.out.printf("| %-56.56s |%n", "Admin: " + name);
+                    System.out.println("|----------------------------------------------------------|");
+                    System.out.println("| [1] Information Desk                                     |");
+                    System.out.println("| [2] Exhibitions                                          |");
+                    System.out.println("| [3] Gift Shop                                            |");
+                    System.out.println("| [4] Cafe                                                 |");
+                    System.out.println("| [5] Care and Maintenance Facilities                      |");
+                    System.out.println("| [6] Data Analytics                                       |");
+                    System.out.println("| [7] Account Management                                   |");
+                    System.out.println("| [8] Inventory Management                                 |");
+                    System.out.println("| [0] Exit                                                 |");
+                    System.out.println("------------------------------------------------------------");
 
-                if (!askAgain(sc)) {
+                // If it's not part of the role
+                } else { 
+                    System.out.println("------------------------------------------------------------");
+                    System.out.println("|                   Invalid account role                   |");
+                    System.out.println("------------------------------------------------------------");
                     return;
                 }
-            } else {
-                System.out.print("Create account? (yes/no): ");
-                String confirm = sc.nextLine().trim();
 
-                if (confirm.equalsIgnoreCase("yes")) {
-                    saveNew(name + "," + password + "," + phone + ",staff," + id + "," + age + "," + email);
-                    System.out.println("Account Created");
-                    created = true;
-                } else if (!askAgain(sc)) {
-                    return;
+                System.out.print("Choose: ");
+                int choice = DataFile.toInt(sc.nextLine().trim());
+
+                if (choice == 1) {
+                    if (role.equals("user") && hasPaid(name)) { // if user have already paid
+                        System.out.println("------------------------------------------------------------");
+                        System.out.println("|                    Already have paid.                    |");
+                        System.out.println("------------------------------------------------------------");
+                    } else if (role.equals("user") && !hasPaid(name)) {//if user didn't pay
+                        InformationDesk.buyTickets(sc, name);
+                    } else { // if admin/staff
+                        System.out.println("------------------------------------------------------------");
+                        System.out.println("|               Information Desk Management                |");
+                        System.out.println("|               Staff/Admin access granted.                |");
+                        System.out.println("------------------------------------------------------------");
+                    }
+
+                } else if (choice == 2) {
+                    if (role.equals("user") && !hasPaid(name)) {// if user didn't pay
+                        System.out.println("------------------------------------------------------------");
+                        System.out.println("|        Pay the entrance fee first for this access        |");
+                        System.out.println("------------------------------------------------------------");
+                    } else { // if user have already paid
+                        Exhibitions.showExhibitions(sc);
+                    }
+
+                } else if (choice == 3) {
+                    if (role.equals("user") && !hasPaid(name)) {// if user didn't pay
+                        System.out.println("------------------------------------------------------------");
+                        System.out.println("|         Pay the entrance fee first for this access       |");
+                        System.out.println("------------------------------------------------------------");
+                    } else { // if user have already paid
+                        GiftShop.showGiftShop(sc);
+                    }
+
+                } else if (choice == 4) {
+                    if (role.equals("user") && !hasPaid(name)) {// if user didn't pay
+                        System.out.println("------------------------------------------------------------");
+                        System.out.println("|         Pay the entrance fee first for this access       |");
+                        System.out.println("------------------------------------------------------------");
+                    } else { // if user have already paid
+                        Cafe.showCafe(sc);
+                    }
+
+                } else if (choice == 5 && (role.equals("staff") || role.equals("admin"))) {
+                    CareAndMaintenance.showCareAndMaintenance(sc, role, name);
+
+                } else if (choice == 6 && role.equals("staff")) {
+                    InventoryManagement.showInventoryManagement(sc, role);
+
+                } else if (choice == 6 && role.equals("admin")) {
+                    DataAnalytics.showDataAnalytics(sc);
+
+                } else if (choice == 7 && role.equals("admin")) {
+                    AccountManagement.showAccountManagement(sc);
+
+                } else if (choice == 8 && role.equals("admin")) {
+                    InventoryManagement.showInventoryManagement(sc, role);
+
+                } else if (choice == 0) {
+                    done = true;
+
+                } else { // if picked choice isn't in the choices
+                    System.out.println("------------------------------------------------------------");
+                    System.out.println("|                      Invalid choice.                     |");
+                    System.out.println("------------------------------------------------------------");
+                }
+
+            } catch (NoSuchElementException e) {
+                throw e; // input ended, let main stop cleanly
+
+            } catch (Exception e) {
+                // any other errors show a message and go back to the dashboard
+                System.out.println("------------------------------------------------------------");
+                System.out.printf("| %-56.56s |%n", "Something went wrong (" + e.getMessage() + ").");
+                System.out.println("|                  Back to the dashboard.                  |");
+                System.out.println("------------------------------------------------------------");
+            }
+        }
+    }
+
+    // Reads visitors.txt and checks if the name is in it
+    public static boolean hasPaid(String name) {
+        try {
+            Scanner file = new Scanner(new File("visitors.txt"));
+            boolean found = false;
+
+            while (file.hasNextLine()) {
+                String line = file.nextLine().trim();
+
+                if (line.equalsIgnoreCase(name)) {
+                    found = true;
                 }
             }
+
+            file.close();
+            return found;
+
+        } catch (IOException e) {
+            return false;   // no visitors.txt yet means nobody has paid
         }
-    }
-
-    // ---------- UPDATE ----------
-    static void updateAccount(Scanner sc) {
-        System.out.println();
-        System.out.println("-----------------------UPDATE ACCOUNT-----------------------");
-        System.out.print("Name of the account to update: ");
-        String name = sc.nextLine().trim();
-
-        if (name.equals("admin") || name.equals("staff")) {
-            System.out.println("Built-in accounts cannot be updated here.");
-            return;
-        }
-
-        String[] lines = readAccounts();
-        int index = findAccount(lines, name);
-
-        if (index == -1) {
-            System.out.println("Account not found.");
-            return;
-        }
-
-        String[] p = lines[index].split(",");
-        boolean isStaff = p.length >= 7 && p[3].equals("staff");
-
-        System.out.println("Leave a field blank to keep the current value.");
-
-        System.out.print("New name [" + p[0] + "]: ");
-        String newName = sc.nextLine().trim();
-
-        System.out.print("New password [hidden]: ");
-        String newPassword = sc.nextLine().trim();
-
-        System.out.print("New phone number [" + p[2] + "]: ");
-        String newPhone = sc.nextLine().trim();
-
-        String newAge = "";
-        String newEmail = "";
-
-        if (isStaff) {
-            System.out.print("New age [" + p[5] + "]: ");
-            newAge = sc.nextLine().trim();
-
-            System.out.print("New email [" + p[6] + "]: ");
-            newEmail = sc.nextLine().trim();
-        }
-
-        // Blank means "keep what is already saved"
-        if (newName.isEmpty()) newName = p[0];
-        if (newPassword.isEmpty()) newPassword = p[1];
-        if (newPhone.isEmpty()) newPhone = p[2];
-
-        if (isStaff) {
-            if (newAge.isEmpty()) newAge = p[5];
-            if (newEmail.isEmpty()) newEmail = p[6];
-        }
-
-        String error = checkDetails(newName, newAge, newPassword, newPhone, newEmail, isStaff);
-
-        if (error.isEmpty() && !newName.equals(p[0]) && LoginAuthentication.nameExists(newName)) {
-            error = "Account already exists. Please use another name.";
-        }
-
-        if (!error.isEmpty()) {
-            System.out.println(error);
-            return;
-        }
-
-        System.out.println("------------------------------------------------------------");
-        System.out.print("Update account? (yes/no): ");
-        String confirm = sc.nextLine().trim();
-
-        if (confirm.equalsIgnoreCase("yes")) {
-            String newLine = newName + "," + newPassword + "," + newPhone + "," + p[3];
-
-            if (isStaff) {
-                newLine = newLine + "," + p[4] + "," + newAge + "," + newEmail;
-            }
-
-            lines[index] = newLine;
-            saveAll(lines, -1);
-
-            System.out.println("Account Updated");
-        } else {
-            System.out.println("Update cancelled.");
-        }
-    }
-
-    // ---------- DELETE ----------
-    static void deleteAccount(Scanner sc) {
-        System.out.println();
-        System.out.println("-----------------------DELETE ACCOUNT-----------------------");
-        System.out.print("Name of the account to delete: ");
-        String name = sc.nextLine().trim();
-
-        if (name.equals("admin") || name.equals("staff")) {
-            System.out.println("Built-in accounts cannot be deleted.");
-            return;
-        }
-
-        String[] lines = readAccounts();
-        int index = findAccount(lines, name);
-
-        if (index == -1) {
-            System.out.println("Account not found.");
-            return;
-        }
-
-        System.out.println("------------------------------------------------------------");
-        System.out.print("Delete " + name + "? (yes/no): ");
-        String confirm = sc.nextLine().trim();
-
-        if (confirm.equalsIgnoreCase("yes")) {
-            saveAll(lines, index);   // saves everything except this account
-            System.out.println("Account Deleted");
-        } else {
-            System.out.println("Deletion cancelled.");
-        }
-    }
-
-    // ---------- HELPERS ----------
-
-    // Returns the position of the account in the array, or -1 if not found
-    static int findAccount(String[] lines, String name) {
-        for (int i = 0; i < lines.length; i++) {
-            String[] p = lines[i].split(",");
-
-            if (p[0].equals(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    static boolean idExists(String[] lines, String id) {
-        for (int i = 0; i < lines.length; i++) {
-            String[] p = lines[i].split(",");
-
-            if (p.length >= 7 && p[4].equals(id)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    static boolean isWholeNumber(String text) {
-        if (text.isEmpty()) {
-            return false;
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            if (!Character.isDigit(text.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    static boolean askAgain(Scanner sc) {
-        System.out.print("Try again? (yes/no): ");
-        return sc.nextLine().trim().equalsIgnoreCase("yes");
-    }
-
-    // Same rules as the Sign Up, plus age and email for staff.
-    // Returns an error message, or "" if everything is valid.
-    static String checkDetails(String name, String age, String password,
-                               String phone, String email, boolean isStaff) {
-
-        if (name.isEmpty() || password.isEmpty() || phone.isEmpty()) {
-            return "All fields must be filled";
-        }
-
-        if (isStaff && (age.isEmpty() || email.isEmpty())) {
-            return "All fields must be filled";
-        }
-
-        if (name.contains(",") || password.contains(",") || phone.contains(",")
-                || age.contains(",") || email.contains(",")) {
-            return "Commas are not allowed";
-        }
-
-        if (password.length() < 8) {
-            return "Passwords should be atleast 8 characters";
-        }
-
-        if (phone.length() != 11 || !isWholeNumber(phone)) {
-            return "Phone number should be exactly 11 numbers";
-        }
-
-        if (isStaff) {
-            if (!isWholeNumber(age) || age.length() > 3
-                    || Integer.parseInt(age) < 18 || Integer.parseInt(age) > 100) {
-                return "Age must be a number from 18 to 100";
-            }
-
-            if (!email.contains("@")) {
-                return "Email must contain @";
-            }
-        }
-
-        return "";
     }
 }
