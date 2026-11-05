@@ -2,7 +2,6 @@ package aquaverse;
 
 import java.util.Scanner;
 
-// Cafe flowchart - basic version (multiple items, each with a quantity)
 public class Cafe {
 
     // creation of cafe
