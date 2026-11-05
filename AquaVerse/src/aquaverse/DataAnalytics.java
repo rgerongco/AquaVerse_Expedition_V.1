@@ -25,7 +25,7 @@ public class DataAnalytics {
 
     // ---------- RECORDING (called by GiftShop, Cafe and Exhibitions) ----------
     public static void recordSale(String category, double amount) {
-        addLine(SALES_FILE, LocalDate.now() + "," + category + "," + amount);
+        addLine(SALES_FILE, LocalDate.now() + "," + category + "," + String.format("%.2f", amount));
     }
 
     public static void recordVisit(String category) {
@@ -84,10 +84,12 @@ public class DataAnalytics {
         boolean back = false;
 
         while (!back) {
-            System.out.println("\n=== DATA ANALYTICS ===");
-            System.out.println("[1] Total Sales");
-            System.out.println("[2] Total Visits");
-            System.out.println("[0] Back");
+            System.out.println();
+            System.out.println("-----------------------DATA ANALYTICS-----------------------");
+            System.out.println("| [1] Total Sales                                          |");
+            System.out.println("| [2] Total Visits                                         |");
+            System.out.println("| [0] Back                                                 |");
+            System.out.println("------------------------------------------------------------");
             System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
@@ -104,18 +106,22 @@ public class DataAnalytics {
                     }
                 }
             } else {
-                System.out.println("Please enter the value of your choice.");
+                System.out.println("\n- Please enter the value of your choice.");
             }
         }
     }
 
     // Returns 1-5 for the chosen time period, or 0 to go back
     static int choosePeriod(Scanner sc) {
-        System.out.println("\nSelect a time period:");
+        System.out.println();
+        System.out.println("---------------------SELECT TIME PERIOD---------------------");
+
         for (int i = 0; i < PERIODS.length; i++) {
-            System.out.println("[" + (i + 1) + "] " + PERIODS[i]);
+            System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + PERIODS[i]);
         }
-        System.out.println("[0] Back");
+
+        System.out.println("| [0] Back                                                 |");
+        System.out.println("------------------------------------------------------------");
         System.out.print("Choose: ");
         String answer = sc.nextLine().trim();
 
@@ -125,7 +131,7 @@ public class DataAnalytics {
         if (answer.equals("4")) return 4;
         if (answer.equals("5")) return 5;
         if (!answer.equals("0")) {
-            System.out.println("Please enter the value of your choice.");
+            System.out.println("\n- Please enter the value of your choice.");
         }
         return 0;
     }
@@ -178,15 +184,22 @@ public class DataAnalytics {
             }
         }
 
-        System.out.println("\n=== TOTAL SALES (" + PERIODS[period - 1] + ") ===");
-        System.out.println("From " + start + " to " + LocalDate.now());
+        System.out.println();
+        System.out.println("------------------------TOTAL SALES-------------------------");
+        System.out.printf("| %-56.56s |%n", "Period: " + PERIODS[period - 1]);
+        System.out.printf("| %-56.56s |%n", "From: " + start + " to " + LocalDate.now());
+        System.out.println("|----------------------------------------------------------|");
+
         if (count == 0) {
-            System.out.println("No matching records found.");
+            System.out.println("| - No matching records found.                             |");
         } else {
-            System.out.println("Gift Shop: PHP " + String.format("%.2f", giftShop));
-            System.out.println("Cafe:      PHP " + String.format("%.2f", cafe));
-            System.out.println("Total:     PHP " + String.format("%.2f", giftShop + cafe));
+            System.out.printf("| %-56.56s |%n", "- Gift Shop: PHP " + String.format("%.2f", giftShop));
+            System.out.printf("| %-56.56s |%n", "- Cafe:      PHP " + String.format("%.2f", cafe));
+            System.out.println("|----------------------------------------------------------|");
+            System.out.printf("| %-56.56s |%n", "- Total:     PHP " + String.format("%.2f", giftShop + cafe));
         }
+
+        System.out.println("------------------------------------------------------------");
     }
 
     // ---------- TOTAL VISITS ----------
@@ -215,15 +228,23 @@ public class DataAnalytics {
             }
         }
 
-        System.out.println("\n=== TOTAL VISITS (" + PERIODS[period - 1] + ") ===");
-        System.out.println("From " + start + " to " + LocalDate.now());
+        System.out.println();
+        System.out.println("------------------------TOTAL VISITS------------------------");
+        System.out.printf("| %-56.56s |%n", "Period: " + PERIODS[period - 1]);
+        System.out.printf("| %-56.56s |%n", "From: " + start + " to " + LocalDate.now());
+        System.out.println("|----------------------------------------------------------|");
+
         if (total == 0) {
-            System.out.println("No matching records found.");
+            System.out.println("| - No matching records found.                             |");
         } else {
             for (int j = 0; j < VISIT_CATEGORIES.length; j++) {
-                System.out.println(VISIT_CATEGORIES[j] + ": " + counts[j]);
+                System.out.printf("| %-56.56s |%n", "- " + VISIT_CATEGORIES[j] + ": " + counts[j]);
             }
-            System.out.println("Total Visits: " + total);
+
+            System.out.println("|----------------------------------------------------------|");
+            System.out.printf("| %-56.56s |%n", "- Total Visits: " + total);
         }
+
+        System.out.println("------------------------------------------------------------");
     }
 }
