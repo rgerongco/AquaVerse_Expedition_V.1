@@ -5,11 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
+// Care and Maintenance flowchart - staff submits reports, admin reviews them
 public class CareAndMaintenance {
 
-    // Every report is one line in maintenance.txt, separated by semicolons:
-    // problem;level;date;status;staff;cost;remarks;review
-    // "review" is "pending" until the admin accepts it, then "accepted"
+    // creation of care and maintenance
     static String FILE_NAME = "maintenance.txt";
 
     // Staff can submit reports. Admin can review them.
@@ -33,21 +32,26 @@ public class CareAndMaintenance {
 
             String answer = sc.nextLine().trim();
 
+            // pick 0, go back
             if (answer.equals("0")) {
                 back = true;
+
             } else if (role.equals("admin") && answer.equals("1")) {
                 reviewPending(sc);
+
             } else if (role.equals("admin") && answer.equals("2")) {
                 showAccepted();
+
             } else if (!role.equals("admin") && answer.equals("1")) {
                 submitReport(sc, name);
+
             } else {
                 System.out.println("\n- Please enter the value of your choice.");
             }
         }
     }
 
-    // ---------- STAFF: SUBMIT A REPORT ----------
+    // submitting a maintenance report
     static void submitReport(Scanner sc, String staffName) {
         String[] levels = {"Low", "Medium", "High"};
         String[] statuses = {"Pending", "Ongoing", "Completed"};
@@ -67,12 +71,15 @@ public class CareAndMaintenance {
             double cost = askCost(sc);
             String remarks = askText(sc, "Completion remarks (type N/A if none): ");
 
+            // confirm report submission
             System.out.println("------------------------------------------------------------");
             System.out.print("Submit report? (yes/no): ");
 
             String answer = sc.nextLine().trim();
 
             if (answer.equalsIgnoreCase("yes")) {
+
+                // save the report to the notepad file
                 saveReport(problem + ";" + level + ";" + date + ";" + status + ";"
                         + staffName + ";" + String.format("%.2f", cost) + ";" + remarks + ";pending");
 
@@ -80,6 +87,8 @@ public class CareAndMaintenance {
                 submitted = true;
 
             } else {
+
+                // ask if staff wants to enter the report again
                 System.out.print("Enter the report again? (yes/no): ");
 
                 if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
@@ -89,11 +98,13 @@ public class CareAndMaintenance {
         }
     }
 
-    // ---------- ADMIN: REVIEW PENDING REPORTS ----------
+    // admin reviews the submitted reports
     static void reviewPending(Scanner sc) {
         boolean back = false;
 
         while (!back) {
+
+            // read all reports from the notepad file
             String[] lines = readReports();
 
             // pending[0], pending[1], ... hold the positions of the pending reports
@@ -106,6 +117,7 @@ public class CareAndMaintenance {
             for (int i = 0; i < lines.length; i++) {
                 String[] p = lines[i].split(";");
 
+                // only show reports that are still pending
                 if (p.length >= 8 && p[7].equals("pending")) {
                     pending[pendingCount] = i;
                     pendingCount++;
@@ -113,6 +125,7 @@ public class CareAndMaintenance {
                 }
             }
 
+            // no pending reports found
             if (pendingCount == 0) {
                 System.out.println("|             No pending maintenance reports.              |");
                 System.out.println("------------------------------------------------------------");
@@ -124,6 +137,7 @@ public class CareAndMaintenance {
             System.out.print("Enter report number to review (0 to go back): ");
             int number = toInt(sc.nextLine().trim());
 
+            // pick 0, go back
             if (number == 0) {
                 back = true;
 
@@ -131,6 +145,8 @@ public class CareAndMaintenance {
                 System.out.println("\n- Invalid report number.");
 
             } else {
+
+                // get the selected report
                 int index = pending[number - 1];
                 String[] p = lines[index].split(";");
 
@@ -138,6 +154,7 @@ public class CareAndMaintenance {
 
                 String accept = sc.nextLine().trim();
 
+                // accept the selected report
                 if (accept.equalsIgnoreCase("yes")) {
 
                     // Same line as before, but the last part becomes "accepted"
@@ -147,6 +164,7 @@ public class CareAndMaintenance {
                         newLine = newLine + ";" + p[k];
                     }
 
+                    // update the report status
                     lines[index] = newLine + ";accepted";
                     saveAll(lines, -1);
 
@@ -154,6 +172,8 @@ public class CareAndMaintenance {
                     System.out.println("- Maintenance Report List Updated");
 
                 } else {
+
+                    // ask if admin wants to delete the report
                     System.out.print("Delete report? (yes/no): ");
 
                     String delete = sc.nextLine().trim();
@@ -162,15 +182,15 @@ public class CareAndMaintenance {
                         saveAll(lines, index);   // saves everything except this report
                         System.out.println("\n- Report Deleted");
                     }
-
-                    // NO -> goes back to the pending reports
                 }
             }
         }
     }
 
-    // ---------- ADMIN: VIEW ACCEPTED REPORTS ----------
+    // showing all accepted maintenance reports
     static void showAccepted() {
+
+        // read all reports from the notepad file
         String[] lines = readReports();
         int count = 0;
 
@@ -180,12 +200,14 @@ public class CareAndMaintenance {
         for (int i = 0; i < lines.length; i++) {
             String[] p = lines[i].split(";");
 
+            // only show reports that are already accepted
             if (p.length >= 8 && p[7].equals("accepted")) {
                 count++;
                 printReport(p, count);
             }
         }
 
+        // no accepted reports found
         if (count == 0) {
             System.out.println("|           No accepted maintenance reports yet.           |");
         }
@@ -193,7 +215,7 @@ public class CareAndMaintenance {
         System.out.println("------------------------------------------------------------");
     }
 
-    // Prints one report inside the box that the caller opened
+    // show the details of one maintenance report
     static void printReport(String[] p, int number) {
         if (number > 1) {
             System.out.println("|----------------------------------------------------------|");
@@ -208,9 +230,7 @@ public class CareAndMaintenance {
         System.out.printf("| %-56.56s |%n", "- Completion Remarks: " + p[6]);
     }
 
-    // ---------- FILE HELPERS ----------
-
-    // Reads every report line of maintenance.txt into an array
+    // read all reports from the notepad file
     static String[] readReports() {
         File file = new File(FILE_NAME);
 
@@ -219,7 +239,8 @@ public class CareAndMaintenance {
         }
 
         try {
-            // First pass: count the lines
+
+            // count the lines in the notepad file
             int count = 0;
             Scanner counter = new Scanner(file);
 
@@ -231,7 +252,7 @@ public class CareAndMaintenance {
 
             counter.close();
 
-            // Second pass: put the lines in the array
+            // put all the reports inside an array
             String[] lines = new String[count];
             int i = 0;
             Scanner reader = new Scanner(file);
@@ -255,6 +276,7 @@ public class CareAndMaintenance {
         return new String[0];
     }
 
+    // save a new report to the notepad file
     static void saveReport(String line) {
         try {
             FileWriter writer = new FileWriter(FILE_NAME, true);
@@ -266,8 +288,7 @@ public class CareAndMaintenance {
         }
     }
 
-    // Writes the lines back to maintenance.txt.
-    // The line at position "skip" is left out (use -1 to keep every line).
+    // update the reports inside the notepad file and the report at position "skip" will not be saved
     static void saveAll(String[] lines, int skip) {
         try {
             FileWriter writer = new FileWriter(FILE_NAME);
@@ -284,8 +305,8 @@ public class CareAndMaintenance {
             System.out.println("Could not save to " + FILE_NAME);
         }
     }
-
-    // ---------- INPUT HELPERS ----------
+    
+    // convert the input into an integer
     static int toInt(String text) {
         try {
             return Integer.parseInt(text);
@@ -295,7 +316,7 @@ public class CareAndMaintenance {
         }
     }
 
-    // Keeps asking until something is typed (a semicolon is replaced with a comma)
+    // asking for a text
     static String askText(Scanner sc, String label) {
         String text = "";
 
@@ -311,6 +332,7 @@ public class CareAndMaintenance {
         return text;
     }
 
+    // choosing from the given options
     static String askChoice(Scanner sc, String title, String[] options) {
         while (true) {
             System.out.println();
@@ -334,7 +356,7 @@ public class CareAndMaintenance {
         }
     }
 
-    // Date must look like MM-DD-YYYY
+    // asking for the date (MM-DD-YYYY)
     static String askDate(Scanner sc) {
         while (true) {
             System.out.print("\nDate reported (MM-DD-YYYY): ");
@@ -360,6 +382,7 @@ public class CareAndMaintenance {
         }
     }
 
+    // asking for the repair cost
     static double askCost(Scanner sc) {
         while (true) {
             System.out.print("Repair cost (PHP): ");
@@ -372,7 +395,7 @@ public class CareAndMaintenance {
                 }
 
             } catch (NumberFormatException e) {
-                // falls through to the message below
+                // invalid amount, show the message below
             }
 
             System.out.println("\n- Please enter a valid amount.");
