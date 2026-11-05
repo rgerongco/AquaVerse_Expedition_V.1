@@ -5,10 +5,10 @@ import java.util.Scanner;
 
 public class Exhibitions {
 
-    // exhibits.txt -> Category|Exhibit|Info line 1|Info line 2|...
+    // create a file for the exhibitions
     static String FILE_NAME = "exhibits.txt";
 
-    // Creates visitors.txt if it doesn't exist yet
+    // create visitor file
     public static void createFiles() throws IOException {
 
         File visitors = new File("visitors.txt");
@@ -17,7 +17,7 @@ public class Exhibitions {
         }
     }
 
-    // Reads exhibits.txt and lets the visitor view each category
+    // read exhibitions
     public static void showExhibitions(Scanner input) throws IOException {
         String[][] rows = DataFile.load(FILE_NAME, 3);
         if (rows.length == 0) {
@@ -51,9 +51,9 @@ public class Exhibitions {
         }
     }
 
-    // Lists the exhibits of one category, then shows the one the visitor picks
+    // list exhibitions and show once visitor picks
     static void showCategory(Scanner input, String[][] rows, String category) {
-        // Save the visit so Data Analytics can count it
+        // record visit and send to data analytics
         DataAnalytics.recordVisit(category);
 
         String[][] exhibits = DataFile.filter(rows, 0, category);
@@ -79,8 +79,7 @@ public class Exhibitions {
             return;
         }
 
-        // Show the exhibit until the visitor exits it
-        // (part 1 is the name, every part after that is one line of information)
+        // show exhibit until visitor exit
         String[] exhibit = exhibits[choice - 1];
         boolean viewing = true;
 
@@ -104,7 +103,7 @@ public class Exhibitions {
         }
     }
 
-    // Prints a long text inside the box, breaking it into rows that fit
+    // prints a long text inside the box, breaking it into rows that fit
     static void printWrapped(String text) {
         while (text.length() > 56) {
             int cut = text.lastIndexOf(' ', 56);
