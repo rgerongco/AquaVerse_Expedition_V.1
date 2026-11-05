@@ -5,7 +5,7 @@ import java.util.Scanner;
 // Cafe flowchart - basic version (multiple items, each with a quantity)
 public class Cafe {
 
-    // cafe.txt -> Category|Group|Item|Price   (the Group is - when the category has no groups)
+    // creation of cafe
     static String FILE_NAME = "cafe.txt";
 
     // The visitor's order (cart)
@@ -14,11 +14,10 @@ public class Cafe {
     static int[] cartQty = new int[100];
     static int cartCount = 0;
 
-    // Show order -> accept? -> payment -> enough? -> receipt
-    // Returns true if purchase completed, false if visitor goes back to the Cafe
+    // checking out
     static boolean checkout(Scanner sc) {
 
-        // Compute the total of all items
+        // computation of the total of all items
         double total = 0;
         for (int i = 0; i < cartCount; i++) {
             total += cartPrices[i] * cartQty[i];
@@ -40,14 +39,13 @@ public class Cafe {
             System.out.printf("| %-56.56s |%n", "TOTAL: " + String.format("%.2f", total));
             System.out.println("------------------------------------------------------------");
 
-            // Does the visitor accept the purchase?
             String accept = DataFile.ask(sc, "Accept purchase? (yes/no): ");
 
             if (!accept.equalsIgnoreCase("yes")) {
-                return false; // NO -> back to Cafe
+                return false;
             }
 
-            // Payment method
+            // payment method
             System.out.println();
             System.out.println("-----------------------PAYMENT METHOD-----------------------");
             System.out.println("| [1] Cash                                                 |");
@@ -68,12 +66,12 @@ public class Cafe {
                 System.out.println("------------------------------------------------------------");
                 System.out.println("|                 Invalid payment method.                  |");
                 System.out.println("------------------------------------------------------------");
-                continue; // back to Show order (the order is kept)
+                continue;
             }
 
             double amount = DataFile.toDouble(DataFile.ask(sc, "Enter payment amount: "));
 
-            // Is payment enough?
+            // insufficient funds
             if (amount >= total) {
                 System.out.println();
                 System.out.println("------------------------------------------------------------");
@@ -81,12 +79,12 @@ public class Cafe {
                 System.out.println("------------------------------------------------------------");
                 DataAnalytics.recordSale("Cafe", total);
 
-                // Take the ordered items out of the stock
+                // take the ordered items out of the stock
                 for (int i = 0; i < cartCount; i++) {
                     InventoryManagement.reduceStock("Cafe", cartNames[i], cartQty[i]);
                 }
 
-                // Generate receipt
+                // generate receipt
                 System.out.println();
                 System.out.println("--------------------------RECEIPT---------------------------");
 
@@ -111,21 +109,18 @@ public class Cafe {
                 System.out.println("|                    Insufficient Funds                    |");
                 System.out.println("------------------------------------------------------------");
 
-                // Cancel transaction?
+                // cancel transaction?
                 String cancel = DataFile.ask(sc, "Cancel transaction? (yes/no): ");
 
                 if (cancel.equalsIgnoreCase("yes")) {
                     return false; // YES -> back to Cafe
                 }
-
-                // NO -> loops back to Show order
             }
         }
     }
 
     public static void showCafe(Scanner sc) {
-
-        // All the items come from the notepad file
+        // read all items come from the notepad file
         String[][] rows = DataFile.load(FILE_NAME, 4);
 
         if (rows.length == 0) {
@@ -136,11 +131,6 @@ public class Cafe {
         String[] categories = DataFile.distinct(rows, 0);
         cartCount = 0;
 
-        // ---------- START ----------
-
-        // (The entrance fee check is already done by the main dashboard)
-
-        // Cafe
         boolean done = false;
 
         while (!done) {
@@ -157,11 +147,13 @@ public class Cafe {
 
             int choice = DataFile.toInt(DataFile.ask(sc, "Choose: "));
 
+            // pick 0, leave cafe
             if (choice == 0) {
                 System.out.println("\n- Leaving the Cafe...");
                 return;
             }
 
+            // pick other than the choices, invalid
             if (choice < 1 || choice > categories.length) {
                 System.out.println("\n- Invalid choice.");
                 continue;
@@ -170,7 +162,7 @@ public class Cafe {
             String category = categories[choice - 1];
             String[][] items = DataFile.filter(rows, 0, category);
 
-            // Show the items with prices
+            // show the items with prices
             System.out.println();
             System.out.println("----------------------------MENU----------------------------");
             System.out.printf("| %-56.56s |%n", category.toUpperCase());
@@ -180,7 +172,7 @@ public class Cafe {
 
             for (int i = 0; i < items.length; i++) {
 
-                // Items with a group (like Coffee or Tea) get the group name shown above them
+                // items with a group (like Coffee or Tea) get the group name shown above them
                 if (!items[i][1].equals("-") && !items[i][1].equals(lastGroup)) {
                     System.out.printf("| %-56.56s |%n", "[" + items[i][1] + "]");
                     lastGroup = items[i][1];
@@ -206,10 +198,10 @@ public class Cafe {
             if (itemNum < 0 || itemNum >= items.length) {
 
                 if (cartCount == 0) {
-                    continue; // NO order yet -> back to Cafe
+                    continue;
                 }
 
-                // Already has items in the order -> go to checkout
+                // already has items in the order -> go to checkout
                 done = checkout(sc);
 
                 if (!done) {
@@ -226,7 +218,7 @@ public class Cafe {
                 continue;
             }
 
-            // Check the stock (what is already in the order counts too)
+            // check the stock (what is already in the order counts too)
             int inOrder = 0;
 
             for (int i = 0; i < cartCount; i++) {
@@ -245,7 +237,7 @@ public class Cafe {
                 continue;
             }
 
-            // How many amount for this item?
+            // checking the amount wanted
             int qty = 0;
 
             while (qty < 1 || qty > 10 || qty > available) {
@@ -261,7 +253,7 @@ public class Cafe {
                 }
             }
 
-            // Add to the order
+            // add to the order
             cartNames[cartCount] = items[itemNum][2];
             cartPrices[cartCount] = price;
             cartQty[cartCount] = qty;
@@ -269,7 +261,7 @@ public class Cafe {
 
             System.out.println("\n- Added: " + qty + " x " + items[itemNum][2]);
 
-            // Order more items?
+            // ask if order more items
             String more = DataFile.ask(sc, "Order more items? (yes/no): ");
 
             if (more.equalsIgnoreCase("yes")) {
@@ -283,7 +275,7 @@ public class Cafe {
             }
         }
 
-        // ---------- END ----------
+        // ending
         System.out.println("\n- Leaving the Cafe...");
     }
 }
