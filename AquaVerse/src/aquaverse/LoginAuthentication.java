@@ -172,17 +172,17 @@ public class LoginAuthentication {
                     loggedRole = role;
 
                     if (role.equals("admin")) {
-                        System.out.println("--------------------------------");
-                        System.out.println("|   WELCOME TO THE ADMIN DASHBOARD   |");
-                        System.out.println("--------------------------------");
+                        System.out.println("---------------------------------------");
+                        System.out.println("|   WELCOME TO THE ADMIN DASHBOARD    |");
+                        System.out.println("---------------------------------------");
                     } else if (role.equals("staff")) {
-                        System.out.println("--------------------------------");
-                        System.out.println("|   WELCOME TO THE STAFF DASHBOARD   |");
-                        System.out.println("--------------------------------");
+                        System.out.println("---------------------------------------");
+                        System.out.println("|   WELCOME TO THE STAFF DASHBOARD    |");
+                        System.out.println("---------------------------------------");
                     } else {
-                        System.out.println("--------------------------------");
+                        System.out.println("---------------------------------------");
                         System.out.println("|   WELCOME TO AQUAVERSE EXPEDITION   |");
-                        System.out.println("--------------------------------");
+                        System.out.println("---------------------------------------");
                     }
 
                     loggedName = name;
