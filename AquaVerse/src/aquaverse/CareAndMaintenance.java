@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-// Care and Maintenance flowchart - staff submits reports, admin reviews them
 public class CareAndMaintenance {
 
     // creation of care and maintenance
