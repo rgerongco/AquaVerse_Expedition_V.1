@@ -2,16 +2,6 @@ package aquaverse;
 
 import java.util.Scanner;
 
-// Inventory Management for the Gift Shop and the Cafe.
-//
-// The products stay in giftshop.txt and cafe.txt (Category|Group|Item|Price),
-// the stock of every product is kept in inventory.txt (Shop|Item|Stock):
-//
-//   Gift Shop|Dolphin Plush|20
-//   Cafe|Americano|15
-//
-// Staff  : view the stock and update it
-// Admin  : the same, plus add a new product and delete a product
 public class InventoryManagement {
 
     static String STOCK_FILE = "inventory.txt";
@@ -22,13 +12,11 @@ public class InventoryManagement {
     // Stock given to a product that has no stock record yet
     static int DEFAULT_STOCK = 20;
     static int MAX_STOCK = 9999;
+    
     // At or below this number the product is shown as LOW
     static int LOW_STOCK = 5;
 
-    // ---------- USED BY THE GIFT SHOP AND THE CAFE ----------
-
-    // Makes sure every product has a stock record and removes the records of
-    // products that no longer exist. Call it once when the program starts.
+    // check all products and their stock records
     public static void syncStock() {
         String[][] old = DataFile.load(STOCK_FILE, 3);
         String[][] products0 = DataFile.load(SHOP_FILES[0], 4);
@@ -37,11 +25,12 @@ public class InventoryManagement {
         String[][] fresh = new String[old.length + products0.length + products1.length][];
         int count = 0;
 
+        // check the products of each shop
         for (int s = 0; s < SHOPS.length; s++) {
             String[][] products = (s == 0) ? products0 : products1;
 
             if (products.length == 0) {
-                // The product file could not be loaded: keep the old records of this shop
+                // keep the old stock records if the product file cannot be loaded
                 for (int i = 0; i < old.length; i++) {
                     if (old[i][0].equals(SHOPS[s])) {
                         fresh[count] = old[i];
@@ -54,6 +43,8 @@ public class InventoryManagement {
                     if (findRow(fresh, count, SHOPS[s], item) != -1) {
                         continue;   // same item name listed twice
                     }
+
+                    // get the existing stock or give the product its default stock
                     int at = findRow(old, old.length, SHOPS[s], item);
                     String stock = String.valueOf(DEFAULT_STOCK);
                     if (at != -1 && DataFile.toInt(old[at][2]) >= 0) {
@@ -65,6 +56,7 @@ public class InventoryManagement {
             }
         }
 
+        // save the updated stock records
         String[][] result = new String[count][];
         for (int i = 0; i < count; i++) {
             result[i] = fresh[i];
@@ -72,7 +64,7 @@ public class InventoryManagement {
         DataFile.save(STOCK_FILE, result);
     }
 
-    // How many pieces of the item are in stock
+    // get the stock of a selected product
     public static int getStock(String shop, String item) {
         String[][] rows = DataFile.load(STOCK_FILE, 3);
         int at = findRow(rows, rows.length, shop, item);
@@ -88,7 +80,7 @@ public class InventoryManagement {
         return stock < 0 ? 0 : stock;
     }
 
-    // Takes "qty" pieces out of the stock after a purchase
+    // take the purchased quantity out of the stock
     public static void reduceStock(String shop, String item, int qty) {
         String[][] rows = DataFile.load(STOCK_FILE, 3);
         int at = findRow(rows, rows.length, shop, item);
@@ -103,9 +95,7 @@ public class InventoryManagement {
         DataFile.save(STOCK_FILE, rows);
     }
 
-    // ---------- MENUS ----------
-
-    // role is "staff" or "admin"
+    // show the inventory management menu
     public static void showInventoryManagement(Scanner sc, String role) {
         syncStock();
         boolean back = false;
@@ -120,6 +110,7 @@ public class InventoryManagement {
             System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
+            // choose which shop to manage
             if (answer.equals("1")) {
                 shopMenu(sc, role, 0);
             } else if (answer.equals("2")) {
@@ -132,6 +123,7 @@ public class InventoryManagement {
         }
     }
 
+    // show the selected shop's inventory menu
     static void shopMenu(Scanner sc, String role, int shop) {
         boolean admin = role.equals("admin");
         boolean back = false;
@@ -148,6 +140,7 @@ public class InventoryManagement {
             System.out.println("| [1] View Stock                                           |");
             System.out.println("| [2] Update Stock                                         |");
 
+            // admin can also add and delete products
             if (admin) {
                 System.out.println("| [3] Add Product                                          |");
                 System.out.println("| [4] Delete Product                                       |");
@@ -158,6 +151,7 @@ public class InventoryManagement {
             System.out.print("Choose: ");
             String answer = sc.nextLine().trim();
 
+            // choose an inventory action
             if (answer.equals("1")) {
                 viewStock(shop);
             } else if (answer.equals("2")) {
@@ -174,9 +168,7 @@ public class InventoryManagement {
         }
     }
 
-    // ---------- VIEW ----------
-
-    // Prints the numbered product list with the stock. Returns the products shown.
+    // show all products with their prices and stock
     static String[][] printProducts(int shop) {
         syncStock();
         String[][] products = DataFile.load(SHOP_FILES[shop], 4);
@@ -195,6 +187,7 @@ public class InventoryManagement {
             System.out.println("-------------------------CAFE STOCK-------------------------");
         }
 
+        // display the product details and its current stock
         for (int i = 0; i < products.length; i++) {
             String place = products[i][0];
             if (!products[i][1].equals("-")) {
@@ -204,6 +197,7 @@ public class InventoryManagement {
             int at = findRow(stockRows, stockRows.length, SHOPS[shop], products[i][2]);
             int stock = (at == -1) ? 0 : Math.max(0, DataFile.toInt(stockRows[at][2]));
 
+            // check if the product is low or out of stock
             String note = "";
             if (stock == 0) {
                 note = "  ** OUT OF STOCK **";
@@ -224,12 +218,12 @@ public class InventoryManagement {
         return products;
     }
 
+    // view the available stock
     static void viewStock(int shop) {
         printProducts(shop);
     }
 
-    // ---------- UPDATE ----------
-
+    // update the stock of a selected product
     static void updateStock(Scanner sc, int shop) {
         boolean back = false;
 
@@ -250,6 +244,7 @@ public class InventoryManagement {
                 String item = products[number - 1][2];
                 System.out.println("\n- " + item + " - Current Stock: " + getStock(SHOPS[shop], item));
 
+                // enter the new stock quantity
                 System.out.print("New stock quantity (0-" + MAX_STOCK + ", or C to cancel): ");
                 String text = sc.nextLine().trim();
 
@@ -260,6 +255,7 @@ public class InventoryManagement {
                     if (newStock < 0 || newStock > MAX_STOCK) {
                         System.out.println("\n- Stock must be a whole number from 0 to " + MAX_STOCK + ".");
                     } else {
+                        // confirm the stock update
                         System.out.print("Update stock of " + item + " to " + newStock + "? (yes/no): ");
                         if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
                             setStock(SHOPS[shop], item, newStock);
@@ -273,6 +269,7 @@ public class InventoryManagement {
         }
     }
 
+    // save the new stock quantity
     static void setStock(String shop, String item, int stock) {
         String[][] rows = DataFile.load(STOCK_FILE, 3);
         int at = findRow(rows, rows.length, shop, item);
@@ -289,8 +286,7 @@ public class InventoryManagement {
         DataFile.save(STOCK_FILE, rows);
     }
 
-    // ---------- ADD (admin) ----------
-
+    // add a new product to the selected shop
     static void addProduct(Scanner sc, int shop) {
         String[][] rows = DataFile.load(SHOP_FILES[shop], 4);
 
@@ -302,7 +298,7 @@ public class InventoryManagement {
             System.out.println("--------------------ADD PRODUCT TO CAFE---------------------");
         }
 
-        // ----- category -----
+        // choose a category or create a new one
         String[] categories = DataFile.distinct(rows, 0);
         String category = "";
         String group = "-";
@@ -338,6 +334,7 @@ public class InventoryManagement {
             newCategory = true;
         }
 
+        // enter the new category and its sub-group
         if (newCategory) {
             category = askText(sc, "New category name (0 to cancel): ");
             if (category == null) {
@@ -353,7 +350,7 @@ public class InventoryManagement {
                 }
             }
         } else {
-            // An existing category: use one of its groups, or none if it has none
+            // choose an existing sub-group or create a new one
             String[][] inCategory = DataFile.filter(rows, 0, category);
             String[] groups = DataFile.distinct(inCategory, 1);
 
@@ -393,7 +390,7 @@ public class InventoryManagement {
             }
         }
 
-        // ----- product name -----
+        // enter the product name
         String name = "";
         while (name.isEmpty()) {
             name = askText(sc, "Product name (0 to cancel): ");
@@ -407,7 +404,7 @@ public class InventoryManagement {
             }
         }
 
-        // ----- price -----
+        // enter the product price
         double price = -1;
         while (price <= 0) {
             System.out.print("Price in PHP (0 to cancel): ");
@@ -425,7 +422,7 @@ public class InventoryManagement {
 
         String priceText = String.format("%.2f", price);
 
-        // ----- starting stock -----
+        // enter the starting stock
         int stock = -1;
         while (stock < 0) {
             System.out.print("Starting stock (0-" + MAX_STOCK + "): ");
@@ -436,7 +433,7 @@ public class InventoryManagement {
             }
         }
 
-        // ----- confirm -----
+        // show the product details and confirm adding it
         System.out.println();
         System.out.println("----------------------PRODUCT DETAILS-----------------------");
         System.out.printf("| %-56.56s |%n", "Category: " + category);
@@ -456,7 +453,7 @@ public class InventoryManagement {
             return;
         }
 
-        // Put the new product next to the products of the same category/group
+        // place the new product beside the same category and sub-group
         int lastSame = -1;
         int lastCategory = -1;
 
@@ -476,6 +473,7 @@ public class InventoryManagement {
             insertAt = lastCategory + 1;
         }
 
+        // save the new product to the product file
         String[][] updated = new String[rows.length + 1][];
         int k = 0;
 
@@ -493,8 +491,7 @@ public class InventoryManagement {
         System.out.println("\n- Product Added Successfully.");
     }
 
-    // ---------- DELETE (admin) ----------
-
+    // delete a selected product from the shop
     static void deleteProduct(Scanner sc, int shop) {
         boolean back = false;
 
@@ -515,12 +512,15 @@ public class InventoryManagement {
                 System.out.println("\n- The last product of the " + SHOPS[shop] + " cannot be deleted.");
             } else {
                 String item = products[number - 1][2];
+
+                // confirm the product deletion
                 System.out.print("Delete " + item + "? (yes/no): ");
 
                 if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
                     String[][] kept = new String[products.length - 1][];
                     int k = 0;
 
+                    // keep all products except the selected one
                     for (int i = 0; i < products.length; i++) {
                         if (i != number - 1) {
                             kept[k] = products[i];
@@ -538,9 +538,7 @@ public class InventoryManagement {
         }
     }
 
-    // ---------- HELPERS ----------
-
-    // Position of the stock row of (shop, item) in the first "count" rows, or -1
+    // find the stock record of a selected product
     static int findRow(String[][] rows, int count, String shop, String item) {
         for (int i = 0; i < count; i++) {
             if (rows[i][0].equals(shop) && rows[i][1].equals(item)) {
@@ -550,7 +548,7 @@ public class InventoryManagement {
         return -1;
     }
 
-    // Is there already a product with this name? (the name is compared in lower case)
+    // check if the product name already exists
     static boolean nameExists(String[][] rows, String name) {
         for (int i = 0; i < rows.length; i++) {
             if (rows[i][2].equalsIgnoreCase(name)) {
@@ -560,8 +558,7 @@ public class InventoryManagement {
         return false;
     }
 
-    // Asks for a text. Returns null when the visitor types 0.
-    // The | symbol is not allowed because it separates the parts in the files.
+    // ask for a text input
     static String askText(Scanner sc, String label) {
         while (true) {
             System.out.print(label);
