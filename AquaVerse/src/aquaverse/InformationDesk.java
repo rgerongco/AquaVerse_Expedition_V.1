@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class InformationDesk {
 
-    // Reads a whole number; keeps asking until the visitor types one
+    // reads a whole number
     static int askInt(Scanner sc, String prompt, int min) {
         while (true) {
             System.out.print(prompt);
@@ -17,7 +17,7 @@ public class InformationDesk {
         }
     }
 
-    // Reads an amount; keeps asking until the visitor types one
+    // reads an amount
     static double askAmount(Scanner sc, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -29,8 +29,7 @@ public class InformationDesk {
         }
     }
 
-    // Ticket purchase and payment.
-    // Returns true if the payment was successful, false if the transaction was cancelled.
+    // ticket purchase and payment
     public static boolean buyTickets(Scanner sc, String accountName) {
 
         System.out.println();
@@ -38,10 +37,10 @@ public class InformationDesk {
         System.out.printf("| %-56.56s |%n", "Account Name: " + accountName);
         System.out.println("------------------------------------------------------------");
 
-        //NUMBER OF TICKET/S TO PURCHASE
+        // number of tickets to purchase
         int ticketNumber = askInt(sc, "Enter number/s of ticket to purchase: ", 1);
 
-        //DATE TO BOOK
+        // booking date
         boolean date = false;
         String dateToBook = "";
 
@@ -67,15 +66,14 @@ public class InformationDesk {
             }
         }
 
-        //DECISION
-        //ANY KIDS UNDER 10/SENIOR/PWD WILL HAVE DISCOUNT, ELSE REGULAR PRICE OF TICKET WILL BE SHOWN
+        // checking for discount
         System.out.print("Are there any kids under 10 / Senior / PWD? (yes/no): ");
         String discountRequirement = sc.nextLine().trim().toLowerCase();
 
         double regularTicketPrice = 150.00;
         boolean discountApplicable = discountRequirement.equals("yes");
 
-        //HOW MANY TICKETS ARE FOR KIDS UNDER 10 / SENIOR / PWD
+        // how many tickets are available for the discount
         int discountedTickets = 0;
 
         if (discountApplicable) {
@@ -93,22 +91,21 @@ public class InformationDesk {
             }
         }
 
-        //ONLY THE DISCOUNTED TICKETS GET THE 20% OFF, THE REST STAY AT THE REGULAR PRICE
+        // discounted tickets + regular
         int regularTickets = ticketNumber - discountedTickets;
         double regularSubtotal = regularTickets * regularTicketPrice;
         double discountedSubtotal = discountedTickets * regularTicketPrice;
 
-        //GET THE 20% OF THE DISCOUNTED TICKETS ONLY
         double discountAmount = discountedSubtotal * 0.20;
 
-        //TOTAL = ALL TICKETS AT THE REGULAR PRICE MINUS THE DISCOUNT
+        // total price of the tickets
         double totalPriceOfTicket = regularSubtotal + discountedSubtotal - discountAmount;
 
         if (discountApplicable) {
             System.out.println("\n- Apply 20% Discount to " + discountedTickets + " ticket/s");
         }
 
-        //TOTAL PRICE SHOWN
+        // total price
         System.out.println();
         System.out.println("------------------------TOTAL PRICE-------------------------");
 
@@ -127,7 +124,7 @@ public class InformationDesk {
         System.out.printf("| %-56.56s |%n", "Total Price: PHP " + String.format("%.2f", totalPriceOfTicket));
         System.out.println("------------------------------------------------------------");
 
-        //INPUT PAYMENT METHOD
+        // payment method
         boolean pay = false;
         String paymentMethod = "";
 
@@ -153,39 +150,37 @@ public class InformationDesk {
             }
         }
 
-        //INPUT PAYMENT
         double paymentAmount = askAmount(sc, "Enter payment amount: PHP ");
-
-        //DECISION
-        //IS PAYMENT ENOUGH?
+        
+        // payment decision
         while (paymentAmount < totalPriceOfTicket) {
 
-            //INSUFFICIENT FUNDS
+            // insufficient funds
             System.out.println("\n- Insufficient funds");
 
-            //CANCEL TRANSACTION?
+            // cancel transaction
             System.out.print("Cancel transaction? (yes/no): ");
             String cancelTransaction = sc.nextLine().trim().toLowerCase();
 
             if (cancelTransaction.equals("yes")) {
-                //BACK TO INFORMATION DESK
+                // back to information desk
                 System.out.println("\n- Transaction Cancelled");
                 System.out.println("- Back to Information Desk");
                 return false;
             } else {
-                //BACK TO TOTAL PRICE SHOWN
+                // back to total price
                 System.out.println("\nTotal Price: PHP " + String.format("%.2f", totalPriceOfTicket));
                 paymentAmount = askAmount(sc, "Enter payment amount: PHP ");
             }
         }
 
-        //PAYMENT SUCCESSFUL
+        // success of payment
         System.out.println();
         System.out.println("------------------------------------------------------------");
         System.out.println("|                    PAYMENT SUCCESSFUL                    |");
         System.out.println("------------------------------------------------------------");
 
-        //GENERATE RECEIPT
+        // generation of receipt
         System.out.println();
         System.out.println("--------------------------RECEIPT---------------------------");
         System.out.printf("| %-56.56s |%n", "Account Name: " + accountName);
@@ -206,8 +201,7 @@ public class InformationDesk {
         System.out.println("|                  TRANSACTION COMPLETE!                   |");
         System.out.println("------------------------------------------------------------");
 
-        // Save the visitor's name in visitors.txt so the Dashboard knows they paid
-        // true = add to the end of the file instead of overwriting it
+        // save the visitor's name in visitors.txt
         try {
             FileWriter out = new FileWriter("visitors.txt", true);
             out.write(accountName + "\n");
