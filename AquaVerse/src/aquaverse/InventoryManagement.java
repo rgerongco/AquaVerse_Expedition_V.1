@@ -256,8 +256,7 @@ public class InventoryManagement {
                         System.out.println("\n- Stock must be a whole number from 0 to " + MAX_STOCK + ".");
                     } else {
                         // confirm the stock update
-                        System.out.print("Update stock of " + item + " to " + newStock + "? (yes/no): ");
-                        if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
+                        if (DataFile.askYesNo(sc, "Update stock of " + item + " to " + newStock + "? (yes/no): ")) {
                             setStock(SHOPS[shop], item, newStock);
                             System.out.println("\n- Stock Updated.");
                         } else {
@@ -305,24 +304,31 @@ public class InventoryManagement {
         boolean newCategory = false;
 
         if (categories.length > 0) {
-            System.out.println("| Categories:                                              |");
+            int pick;
 
-            for (int i = 0; i < categories.length; i++) {
-                System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + categories[i]);
+            // an invalid choice asks again, only 0 cancels
+            while (true) {
+                System.out.println("| Categories:                                              |");
+
+                for (int i = 0; i < categories.length; i++) {
+                    System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + categories[i]);
+                }
+
+                System.out.printf("| %-56.56s |%n", "[" + (categories.length + 1) + "] New Category");
+                System.out.println("| [0] Cancel                                               |");
+                System.out.println("------------------------------------------------------------");
+                System.out.print("Choose a category: ");
+                pick = DataFile.toInt(sc.nextLine().trim());
+
+                if (pick >= 0 && pick <= categories.length + 1) {
+                    break;
+                }
+
+                System.out.println("\n- Invalid choice.");
             }
-
-            System.out.printf("| %-56.56s |%n", "[" + (categories.length + 1) + "] New Category");
-            System.out.println("| [0] Cancel                                               |");
-            System.out.println("------------------------------------------------------------");
-            System.out.print("Choose a category: ");
-            int pick = DataFile.toInt(sc.nextLine().trim());
 
             if (pick == 0) {
                 System.out.println("\n- Add cancelled.");
-                return;
-            }
-            if (pick < 1 || pick > categories.length + 1) {
-                System.out.println("\n- Invalid choice.");
                 return;
             }
             if (pick <= categories.length) {
@@ -341,8 +347,7 @@ public class InventoryManagement {
                 System.out.println("\n- Add cancelled.");
                 return;
             }
-            System.out.print("Will this category have sub-groups? (yes/no): ");
-            if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
+            if (DataFile.askYesNo(sc, "Will this category have sub-groups? (yes/no): ")) {
                 group = askText(sc, "Sub-group name (0 to cancel): ");
                 if (group == null) {
                     System.out.println("\n- Add cancelled.");
@@ -355,27 +360,34 @@ public class InventoryManagement {
             String[] groups = DataFile.distinct(inCategory, 1);
 
             if (!groups[0].equals("-")) {
-                System.out.println();
-                System.out.println("-------------------------SUB-GROUPS-------------------------");
-                System.out.printf("| %-56.56s |%n", category.toUpperCase());
-                System.out.println("|----------------------------------------------------------|");
+                int pick;
 
-                for (int i = 0; i < groups.length; i++) {
-                    System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + groups[i]);
+                // an invalid choice asks again, only 0 cancels
+                while (true) {
+                    System.out.println();
+                    System.out.println("-------------------------SUB-GROUPS-------------------------");
+                    System.out.printf("| %-56.56s |%n", category.toUpperCase());
+                    System.out.println("|----------------------------------------------------------|");
+
+                    for (int i = 0; i < groups.length; i++) {
+                        System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + groups[i]);
+                    }
+
+                    System.out.printf("| %-56.56s |%n", "[" + (groups.length + 1) + "] New Sub-group");
+                    System.out.println("| [0] Cancel                                               |");
+                    System.out.println("------------------------------------------------------------");
+                    System.out.print("Choose a sub-group: ");
+                    pick = DataFile.toInt(sc.nextLine().trim());
+
+                    if (pick >= 0 && pick <= groups.length + 1) {
+                        break;
+                    }
+
+                    System.out.println("\n- Invalid choice.");
                 }
-
-                System.out.printf("| %-56.56s |%n", "[" + (groups.length + 1) + "] New Sub-group");
-                System.out.println("| [0] Cancel                                               |");
-                System.out.println("------------------------------------------------------------");
-                System.out.print("Choose a sub-group: ");
-                int pick = DataFile.toInt(sc.nextLine().trim());
 
                 if (pick == 0) {
                     System.out.println("\n- Add cancelled.");
-                    return;
-                }
-                if (pick < 1 || pick > groups.length + 1) {
-                    System.out.println("\n- Invalid choice.");
                     return;
                 }
                 if (pick <= groups.length) {
@@ -420,7 +432,7 @@ public class InventoryManagement {
             }
         }
 
-        String priceText = String.format("%.2f", price);
+        String priceText = String.format(java.util.Locale.US, "%.2f", price);
 
         // enter the starting stock
         int stock = -1;
@@ -446,9 +458,8 @@ public class InventoryManagement {
         System.out.printf("| %-56.56s |%n", "Price: PHP " + priceText);
         System.out.printf("| %-56.56s |%n", "Stock: " + stock);
         System.out.println("------------------------------------------------------------");
-        System.out.print("Add product? (yes/no): ");
 
-        if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
+        if (!DataFile.askYesNo(sc, "Add product? (yes/no): ")) {
             System.out.println("\n- Add cancelled.");
             return;
         }
@@ -514,9 +525,7 @@ public class InventoryManagement {
                 String item = products[number - 1][2];
 
                 // confirm the product deletion
-                System.out.print("Delete " + item + "? (yes/no): ");
-
-                if (sc.nextLine().trim().equalsIgnoreCase("yes")) {
+                if (DataFile.askYesNo(sc, "Delete " + item + "? (yes/no): ")) {
                     String[][] kept = new String[products.length - 1][];
                     int k = 0;
 
