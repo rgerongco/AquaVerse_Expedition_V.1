@@ -179,16 +179,25 @@ public class AquaVerse {
         }
     }
 
-    // Reads visitors.txt and checks if the name is in it
+    // reads visitors.txt and checks if the name has a ticket for today
+    // (each line is "name,YYYY-MM-DD", a ticket booked for a later date does not count yet)
     public static boolean hasPaid(String name) {
         try {
             Scanner file = new Scanner(new File("visitors.txt"));
             boolean found = false;
+            String today = java.time.LocalDate.now().toString();
 
             while (file.hasNextLine()) {
                 String line = file.nextLine().trim();
+                int comma = line.lastIndexOf(',');
 
-                if (line.equalsIgnoreCase(name)) {
+                if (comma == -1) {
+                    // old record without a date, the ticket stays valid
+                    if (line.equalsIgnoreCase(name)) {
+                        found = true;
+                    }
+                } else if (line.substring(0, comma).trim().equalsIgnoreCase(name)
+                        && line.substring(comma + 1).trim().equals(today)) {
                     found = true;
                 }
             }
