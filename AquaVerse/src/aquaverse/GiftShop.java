@@ -3,10 +3,16 @@ package aquaverse;
 import java.io.IOException;
 import java.util.Scanner;
 
+// Gift Shop flowchart - multiple items, each with a quantity of 1
 public class GiftShop {
 
     // creation of gift shop
     static String FILE_NAME = "giftshop.txt";
+
+    // formats any amount of money to exactly 2 decimal places (e.g. 150 -> 150.00)
+    static String money(double amount) {
+        return String.format("%.2f", amount);
+    }
 
     static void showGiftShop(Scanner input) throws IOException {
 
@@ -65,25 +71,33 @@ public class GiftShop {
             String[] groups = DataFile.distinct(items, 1);
 
             if (!groups[0].equals("-")) {
-                System.out.println();
-                System.out.println("-----------------------SUB-CATEGORIES-----------------------");
-                System.out.printf("| %-56.56s |%n", category.toUpperCase());
-                System.out.println("|----------------------------------------------------------|");
+                int groupChoice;
 
-                for (int i = 0; i < groups.length; i++) {
-                    System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + groups[i]);
+                // an invalid choice asks again, only 0 goes back
+                while (true) {
+                    System.out.println();
+                    System.out.println("-----------------------SUB-CATEGORIES-----------------------");
+                    System.out.printf("| %-56.56s |%n", category.toUpperCase());
+                    System.out.println("|----------------------------------------------------------|");
+
+                    for (int i = 0; i < groups.length; i++) {
+                        System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + groups[i]);
+                    }
+
+                    System.out.println("| [0] Exit                                                 |");
+                    System.out.println("------------------------------------------------------------");
+
+                    groupChoice = DataFile.toInt(DataFile.ask(input, "Choose: "));
+
+                    if (groupChoice >= 0 && groupChoice <= groups.length) {
+                        break;
+                    }
+
+                    System.out.println("\n- Invalid choice.");
                 }
 
-                System.out.println("| [0] Exit                                                 |");
-                System.out.println("------------------------------------------------------------");
-
-                int groupChoice = DataFile.toInt(DataFile.ask(input, "Choose: "));
-
                 // pick 0, go back to the Gift Shop categories
-                if (groupChoice < 1 || groupChoice > groups.length) {
-                    if (groupChoice != 0) {
-                        System.out.println("\n- Invalid choice.");
-                    }
+                if (groupChoice == 0) {
                     continue;   // back to the Gift Shop categories
                 }
 
@@ -94,34 +108,44 @@ public class GiftShop {
                 System.out.println("\n- " + category + ":");
             }
 
-            // show the items with prices
-            System.out.println();
-            System.out.println("----------------------AVAILABLE ITEMS-----------------------");
+            int itemChoice;
 
-            for (int i = 0; i < items.length; i++) {
-                String stockNote = "";
+            // an invalid choice asks again, only 0 goes back
+            while (true) {
 
-                if (InventoryManagement.getStock("Gift Shop", items[i][2]) <= 0) {
-                    stockNote = "  (OUT OF STOCK)";
+                // show the items with prices
+                System.out.println();
+                System.out.println("----------------------AVAILABLE ITEMS-----------------------");
+
+                for (int i = 0; i < items.length; i++) {
+                    String stockNote = "";
+
+                    if (InventoryManagement.getStock("Gift Shop", items[i][2]) <= 0) {
+                        stockNote = "  (OUT OF STOCK)";
+                    }
+
+                    // show the price with 2 decimals (falls back to the raw text if it is not a valid number)
+                    double itemPrice = DataFile.toDouble(items[i][3]);
+                    String priceText = itemPrice < 0 ? items[i][3] : money(itemPrice);
+
+                    System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + items[i][2] + " - PHP " + priceText + stockNote);
                 }
 
-                System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + items[i][2] + " - PHP " + items[i][3] + stockNote);
+                System.out.println("| [0] Exit                                                 |");
+                System.out.println("------------------------------------------------------------");
+
+                itemChoice = DataFile.toInt(DataFile.ask(input, "Choose: "));
+
+                if (itemChoice >= 0 && itemChoice <= items.length) {
+                    break;
+                }
+
+                System.out.println("\n- Invalid choice.");
             }
-
-            System.out.println("| [0] Exit                                                 |");
-            System.out.println("------------------------------------------------------------");
-
-            int itemChoice = DataFile.toInt(DataFile.ask(input, "Choose: "));
 
             // pick 0, go back to the Gift Shop categories
             if (itemChoice == 0) {
                 continue;   // back to the Gift Shop categories
-            }
-
-            // pick other than the choices, invalid
-            if (itemChoice < 1 || itemChoice > items.length) {
-                System.out.println("\n- Invalid choice.");
-                continue;
             }
 
             String selectedItem = items[itemChoice - 1][2];
@@ -163,9 +187,7 @@ public class GiftShop {
             System.out.println("\n- Added to cart: " + selectedItem);
 
             // ask if visitor wants to buy more items
-            String buyInput = DataFile.ask(input, "\nContinue shopping? (yes/no): ").toLowerCase();
-
-            if (buyInput.equals("no")) {
+            if (!DataFile.askYesNo(input, "\nContinue shopping? (yes/no): ")) {
                 break;
             }
         }
@@ -182,6 +204,7 @@ public class GiftShop {
         for (int i = 0; i < cartCount; i++) {
             totalPrice = totalPrice + cartPrices[i];
         }
+        totalPrice = DataFile.round2(totalPrice);
 
         // show shopping cart and accept/cancel purchase
         boolean checkoutComplete = false;
@@ -191,62 +214,60 @@ public class GiftShop {
             System.out.println("-----------------------SHOPPING CART------------------------");
 
             for (int i = 0; i < cartCount; i++) {
-                System.out.printf("| %-56.56s |%n", (i + 1) + ". " + cart[i] + " - PHP " + cartPrices[i]);
+                System.out.printf("| %-56.56s |%n", (i + 1) + ". " + cart[i] + " - PHP " + money(cartPrices[i]));
             }
 
             System.out.println("|----------------------------------------------------------|");
-            System.out.printf("| %-56.56s |%n", "Total: PHP " + totalPrice);
+            System.out.printf("| %-56.56s |%n", "Total: PHP " + money(totalPrice));
             System.out.println("------------------------------------------------------------");
 
-            String acceptPurchase = DataFile.ask(input, "Accept purchase? (yes/no): ").toLowerCase();
-
-            if (acceptPurchase.equals("no")) {
+            // only yes or no is accepted, other inputs ask again
+            if (!DataFile.askYesNo(input, "Accept purchase? (yes/no): ")) {
 
                 // cancel transaction?
-                String cancelTx = DataFile.ask(input, "Cancel transaction? (yes/no): ").toLowerCase();
-
-                if (cancelTx.equals("yes")) {
+                if (DataFile.askYesNo(input, "Cancel transaction? (yes/no): ")) {
                     System.out.println("\n- Transaction cancelled. Returning to Gift Shop...");
                     return;
                 }
 
                 // otherwise it loops back to show the shopping cart
 
-            } else if (acceptPurchase.equals("yes")) {
+            } else {
                 checkoutComplete = true;
             }
         }
 
-        // payment method
-        System.out.println();
-        System.out.println("-----------------------PAYMENT METHOD-----------------------");
-        System.out.println("| [1] Cash                                                 |");
-        System.out.println("| [2] Credit                                               |");
-        System.out.println("| [3] Online                                               |");
-        System.out.println("------------------------------------------------------------");
-
-        int paymentChoice = DataFile.toInt(DataFile.ask(input, "Choose payment method (1-3): "));
-
+        // payment method (an invalid choice asks again)
         String paymentMethod = "";
 
-        if (paymentChoice == 1) {
-            paymentMethod = "Cash";
-        } else if (paymentChoice == 2) {
-            paymentMethod = "Credit";
-        } else if (paymentChoice == 3) {
-            paymentMethod = "Online";
-        } else {
+        while (paymentMethod.isEmpty()) {
             System.out.println();
+            System.out.println("-----------------------PAYMENT METHOD-----------------------");
+            System.out.println("| [1] Cash                                                 |");
+            System.out.println("| [2] Credit                                               |");
+            System.out.println("| [3] Online                                               |");
             System.out.println("------------------------------------------------------------");
-            System.out.println("|                 Invalid payment method.                  |");
-            System.out.println("------------------------------------------------------------");
-            return;
+
+            int paymentChoice = DataFile.toInt(DataFile.ask(input, "Choose payment method (1-3): "));
+
+            if (paymentChoice == 1) {
+                paymentMethod = "Cash";
+            } else if (paymentChoice == 2) {
+                paymentMethod = "Credit";
+            } else if (paymentChoice == 3) {
+                paymentMethod = "Online";
+            } else {
+                System.out.println();
+                System.out.println("------------------------------------------------------------");
+                System.out.println("|                 Invalid payment method.                  |");
+                System.out.println("------------------------------------------------------------");
+            }
         }
 
         // show total price
         System.out.println();
         System.out.println("------------------------------------------------------------");
-        System.out.printf("| %-56.56s |%n", "Total Price: PHP " + totalPrice);
+        System.out.printf("| %-56.56s |%n", "Total Price: PHP " + money(totalPrice));
         System.out.println("------------------------------------------------------------");
 
         // enter payment amount
@@ -260,9 +281,7 @@ public class GiftShop {
             System.out.println("------------------------------------------------------------");
 
             // cancel transaction?
-            String cancelPayment = DataFile.ask(input, "Cancel transaction? (yes/no): ").toLowerCase();
-
-            if (cancelPayment.equals("yes")) {
+            if (DataFile.askYesNo(input, "Cancel transaction? (yes/no): ")) {
                 System.out.println();
                 System.out.println("------------------------------------------------------------");
                 System.out.println("|     Transaction cancelled. Returning to Gift Shop...     |");
@@ -270,7 +289,7 @@ public class GiftShop {
                 return;
 
             } else {
-                System.out.println("\nTotal Price: PHP " + totalPrice);
+                System.out.println("\nTotal Price: PHP " + money(totalPrice));
                 paymentAmount = DataFile.toDouble(DataFile.ask(input, "Enter payment amount: PHP "));
             }
         }
@@ -294,15 +313,15 @@ public class GiftShop {
         System.out.println("| Items Purchased:                                         |");
 
         for (int i = 0; i < cartCount; i++) {
-            System.out.printf("| %-56.56s |%n", (i + 1) + ". " + cart[i] + " - PHP " + cartPrices[i]);
+            System.out.printf("| %-56.56s |%n", (i + 1) + ". " + cart[i] + " - PHP " + money(cartPrices[i]));
         }
 
         System.out.println("|----------------------------------------------------------|");
         System.out.printf("| %-56.56s |%n", "Number of Items: " + cartCount);
-        System.out.printf("| %-56.56s |%n", "Total Price: PHP " + totalPrice);
+        System.out.printf("| %-56.56s |%n", "Total Price: PHP " + money(totalPrice));
         System.out.printf("| %-56.56s |%n", "Payment Method: " + paymentMethod);
-        System.out.printf("| %-56.56s |%n", "Amount Paid: PHP " + paymentAmount);
-        System.out.printf("| %-56.56s |%n", "Change: PHP " + (paymentAmount - totalPrice));
+        System.out.printf("| %-56.56s |%n", "Amount Paid: PHP " + money(paymentAmount));
+        System.out.printf("| %-56.56s |%n", "Change: PHP " + money(DataFile.round2(paymentAmount - totalPrice)));
         System.out.println("|----------------------------------------------------------|");
         System.out.println("|                    PURCHASE COMPLETE!                    |");
         System.out.println("------------------------------------------------------------");
