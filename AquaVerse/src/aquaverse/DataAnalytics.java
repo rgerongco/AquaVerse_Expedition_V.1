@@ -23,7 +23,7 @@ public class DataAnalytics {
 
     // record the sale and its amount
     public static void recordSale(String category, double amount) {
-        addLine(SALES_FILE, LocalDate.now() + "," + category + "," + String.format("%.2f", amount));
+        addLine(SALES_FILE, LocalDate.now() + "," + category + "," + String.format(java.util.Locale.US, "%.2f", amount));
     }
 
     // record a visit to an exhibit category
@@ -114,28 +114,31 @@ public class DataAnalytics {
 
     // choose the time period for the report
     static int choosePeriod(Scanner sc) {
-        System.out.println();
-        System.out.println("---------------------SELECT TIME PERIOD---------------------");
 
-        for (int i = 0; i < PERIODS.length; i++) {
-            System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + PERIODS[i]);
-        }
+        // an invalid choice asks again, only 0 goes back
+        while (true) {
+            System.out.println();
+            System.out.println("---------------------SELECT TIME PERIOD---------------------");
 
-        System.out.println("| [0] Back                                                 |");
-        System.out.println("------------------------------------------------------------");
-        System.out.print("Choose: ");
-        String answer = sc.nextLine().trim();
+            for (int i = 0; i < PERIODS.length; i++) {
+                System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + PERIODS[i]);
+            }
 
-        // check the selected time period
-        if (answer.equals("1")) return 1;
-        if (answer.equals("2")) return 2;
-        if (answer.equals("3")) return 3;
-        if (answer.equals("4")) return 4;
-        if (answer.equals("5")) return 5;
-        if (!answer.equals("0")) {
+            System.out.println("| [0] Back                                                 |");
+            System.out.println("------------------------------------------------------------");
+            System.out.print("Choose: ");
+            String answer = sc.nextLine().trim();
+
+            // check the selected time period
+            if (answer.equals("1")) return 1;
+            if (answer.equals("2")) return 2;
+            if (answer.equals("3")) return 3;
+            if (answer.equals("4")) return 4;
+            if (answer.equals("5")) return 5;
+            if (answer.equals("0")) return 0;
+
             System.out.println("\n- Please enter the value of your choice.");
         }
-        return 0;
     }
 
     // get the starting date of the selected time period
