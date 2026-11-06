@@ -3,6 +3,8 @@ package aquaverse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.Scanner;
 
 // DataFile - reads and saves the notepad (.txt) files that hold the shop and exhibit information.
@@ -87,7 +89,7 @@ public class DataFile {
             int count = 0;
             Scanner counter = new Scanner(file, "UTF-8");
             while (counter.hasNextLine()) {
-                String line = counter.nextLine().replace("﻿", "").trim();
+                String line = counter.nextLine().replace("\uFEFF", "").trim();
                 if (!line.isEmpty()) {
                     count++;
                 }
@@ -99,7 +101,7 @@ public class DataFile {
             int i = 0;
             Scanner reader = new Scanner(file, "UTF-8");
             while (reader.hasNextLine()) {
-                String line = reader.nextLine().replace("﻿", "");
+                String line = reader.nextLine().replace("\uFEFF", "");
                 if (!line.trim().isEmpty()) {
                     lines[i] = line;
                     i++;
@@ -174,9 +176,64 @@ public class DataFile {
 
         // keep asking if the input is empty
         while (text.isEmpty()) {
+            System.out.print(prompt);
             text = sc.nextLine().trim();
         }
         return text;
+    }
+
+    // ask a yes/no question, anything else is not accepted and the question is asked again
+    public static boolean askYesNo(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String text = sc.nextLine().trim();
+
+            if (text.equalsIgnoreCase("yes")) {
+                return true;
+            }
+            if (text.equalsIgnoreCase("no")) {
+                return false;
+            }
+            System.out.println("\n- Please enter yes or no.");
+        }
+    }
+
+    // check if the text is a real date written as MM-DD-YYYY
+    public static boolean isValidDate(String date) {
+        if (date.length() != 10) {
+            return false;
+        }
+
+        for (int i = 0; i < date.length(); i++) {
+            char c = date.charAt(i);
+            if (i == 2 || i == 5) {
+                if (c != '-') {
+                    return false;
+                }
+            } else if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+
+        int month = Integer.parseInt(date.substring(0, 2));
+        int day = Integer.parseInt(date.substring(3, 5));
+        int year = Integer.parseInt(date.substring(6, 10));
+
+        if (year < 1900) {
+            return false;
+        }
+
+        try {
+            LocalDate.of(year, month, day);
+            return true;
+        } catch (DateTimeException e) {
+            return false;
+        }
+    }
+
+    // round a money value to centavos so the computations do not show tiny errors
+    public static double round2(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     // convert text into a whole number
@@ -192,8 +249,20 @@ public class DataFile {
 
     // convert text into a decimal number
     public static double toDouble(String text) {
+        String t = text.trim();
+
+        // digits with an optional decimal point only (no NaN, Infinity, 5d, 1e5, etc.)
+        if (!t.matches("\\d*\\.?\\d+")) {
+            return -1;
+        }
+
         try {
-            return Double.parseDouble(text);
+            double value = Double.parseDouble(t);
+
+            if (Double.isInfinite(value) || Double.isNaN(value)) {
+                return -1;
+            }
+            return value;
         } catch (NumberFormatException e) {
 
             // return -1 if the input is not a valid number
