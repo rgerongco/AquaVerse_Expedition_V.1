@@ -47,31 +47,31 @@ public class InformationDesk {
         while (!date) {
             System.out.print("Enter date to book (e.g., MM-DD-YYYY): ");
             dateToBook = sc.nextLine().trim();
-            boolean valid = dateToBook.length() == 10;
 
-            for (int i = 0; valid && i < dateToBook.length(); i++) {
-                if (i == 2 || i == 5) {
-                    if (dateToBook.charAt(i) != '-') {
-                        valid = false;
-                    }
-                } else if (!Character.isDigit(dateToBook.charAt(i))) {
-                    valid = false;
+            // must be a real date written as MM-DD-YYYY
+            if (DataFile.isValidDate(dateToBook)) {
+                java.time.LocalDate booking = java.time.LocalDate.of(
+                        Integer.parseInt(dateToBook.substring(6, 10)),
+                        Integer.parseInt(dateToBook.substring(0, 2)),
+                        Integer.parseInt(dateToBook.substring(3, 5)));
+
+                // a booking cannot be made for a day that already passed
+                if (booking.isBefore(java.time.LocalDate.now())) {
+                    System.out.println("\n- Date cannot be in the past.");
+                } else {
+                    date = true;
                 }
-            }
-
-            if (valid) {
-                date = true;
             } else {
                 System.out.println("\n- Date must follow MM-DD-YYYY, for example 11-04-2026");
             }
         }
 
         // checking for discount
-        System.out.print("Are there any kids under 10 / Senior / PWD? (yes/no): ");
-        String discountRequirement = sc.nextLine().trim().toLowerCase();
+        // only yes or no is accepted, other inputs ask again
+        boolean discountApplicable = DataFile.askYesNo(sc,
+                "Are there any kids under 10 / Senior / PWD? (yes/no): ");
 
         double regularTicketPrice = 150.00;
-        boolean discountApplicable = discountRequirement.equals("yes");
 
         // how many tickets are available for the discount
         int discountedTickets = 0;
@@ -99,7 +99,7 @@ public class InformationDesk {
         double discountAmount = discountedSubtotal * 0.20;
 
         // total price of the tickets
-        double totalPriceOfTicket = regularSubtotal + discountedSubtotal - discountAmount;
+        double totalPriceOfTicket = DataFile.round2(regularSubtotal + discountedSubtotal - discountAmount);
 
         if (discountApplicable) {
             System.out.println("\n- Apply 20% Discount to " + discountedTickets + " ticket/s");
@@ -159,10 +159,7 @@ public class InformationDesk {
             System.out.println("\n- Insufficient funds");
 
             // cancel transaction
-            System.out.print("Cancel transaction? (yes/no): ");
-            String cancelTransaction = sc.nextLine().trim().toLowerCase();
-
-            if (cancelTransaction.equals("yes")) {
+            if (DataFile.askYesNo(sc, "Cancel transaction? (yes/no): ")) {
                 // back to information desk
                 System.out.println("\n- Transaction Cancelled");
                 System.out.println("- Back to Information Desk");
@@ -201,10 +198,12 @@ public class InformationDesk {
         System.out.println("|                  TRANSACTION COMPLETE!                   |");
         System.out.println("------------------------------------------------------------");
 
-        // save the visitor's name in visitors.txt
+        // save the visitor's name and the booked date (YYYY-MM-DD) in visitors.txt
         try {
+            String savedDate = dateToBook.substring(6, 10) + "-" + dateToBook.substring(0, 2)
+                    + "-" + dateToBook.substring(3, 5);
             FileWriter out = new FileWriter("visitors.txt", true);
-            out.write(accountName + "\n");
+            out.write(accountName + "," + savedDate + "\n");
             out.close();
         } catch (IOException e) {
             System.out.println("\n- Could not save your payment to visitors.txt");
