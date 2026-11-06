@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
+// Care and Maintenance flowchart - staff submits reports, admin reviews them
 public class CareAndMaintenance {
 
     // creation of care and maintenance
@@ -72,15 +73,12 @@ public class CareAndMaintenance {
 
             // confirm report submission
             System.out.println("------------------------------------------------------------");
-            System.out.print("Submit report? (yes/no): ");
+            if (DataFile.askYesNo(sc, "Submit report? (yes/no): ")) {
 
-            String answer = sc.nextLine().trim();
-
-            if (answer.equalsIgnoreCase("yes")) {
-
-                // save the report to the notepad file
+                // save the report to the notepad file (";" splits the parts of a report)
                 saveReport(problem + ";" + level + ";" + date + ";" + status + ";"
-                        + staffName + ";" + String.format("%.2f", cost) + ";" + remarks + ";pending");
+                        + staffName.replace(";", ",") + ";"
+                        + String.format(java.util.Locale.US, "%.2f", cost) + ";" + remarks + ";pending");
 
                 System.out.println("\n- Report submitted");
                 submitted = true;
@@ -88,9 +86,7 @@ public class CareAndMaintenance {
             } else {
 
                 // ask if staff wants to enter the report again
-                System.out.print("Enter the report again? (yes/no): ");
-
-                if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
+                if (!DataFile.askYesNo(sc, "Enter the report again? (yes/no): ")) {
                     return;
                 }
             }
@@ -149,12 +145,8 @@ public class CareAndMaintenance {
                 int index = pending[number - 1];
                 String[] p = lines[index].split(";");
 
-                System.out.print("\nAccept report? (yes/no): ");
-
-                String accept = sc.nextLine().trim();
-
                 // accept the selected report
-                if (accept.equalsIgnoreCase("yes")) {
+                if (DataFile.askYesNo(sc, "\nAccept report? (yes/no): ")) {
 
                     // Same line as before, but the last part becomes "accepted"
                     String newLine = p[0];
@@ -173,11 +165,7 @@ public class CareAndMaintenance {
                 } else {
 
                     // ask if admin wants to delete the report
-                    System.out.print("Delete report? (yes/no): ");
-
-                    String delete = sc.nextLine().trim();
-
-                    if (delete.equalsIgnoreCase("yes")) {
+                    if (DataFile.askYesNo(sc, "Delete report? (yes/no): ")) {
                         saveAll(lines, index);   // saves everything except this report
                         System.out.println("\n- Report Deleted");
                     }
@@ -361,19 +349,8 @@ public class CareAndMaintenance {
             System.out.print("\nDate reported (MM-DD-YYYY): ");
             String date = sc.nextLine().trim();
 
-            boolean valid = date.length() == 10;
-
-            for (int i = 0; valid && i < date.length(); i++) {
-                if (i == 2 || i == 5) {
-                    if (date.charAt(i) != '-') {
-                        valid = false;
-                    }
-                } else if (!Character.isDigit(date.charAt(i))) {
-                    valid = false;
-                }
-            }
-
-            if (valid) {
+            // must be a real date written as MM-DD-YYYY
+            if (DataFile.isValidDate(date)) {
                 return date;
             }
 
@@ -386,15 +363,11 @@ public class CareAndMaintenance {
         while (true) {
             System.out.print("Repair cost (PHP): ");
 
-            try {
-                double cost = Double.parseDouble(sc.nextLine().trim());
+            // invalid amounts (letters, NaN, Infinity, negative) give -1
+            double cost = DataFile.toDouble(sc.nextLine().trim());
 
-                if (cost >= 0) {
-                    return cost;
-                }
-
-            } catch (NumberFormatException e) {
-                // invalid amount, show the message below
+            if (cost >= 0) {
+                return cost;
             }
 
             System.out.println("\n- Please enter a valid amount.");
