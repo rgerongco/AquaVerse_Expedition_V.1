@@ -179,10 +179,7 @@ public class AccountManagement {
                 }
             } else {
                 // confirm the account creation
-                System.out.print("Create account? (yes/no): ");
-                String confirm = sc.nextLine().trim();
-
-                if (confirm.equalsIgnoreCase("yes")) {
+                if (DataFile.askYesNo(sc, "Create account? (yes/no): ")) {
                     saveNew(name + "," + password + "," + phone + ",staff," + id + "," + age + "," + email);
                     System.out.println("Account Created");
                     created = true;
@@ -201,7 +198,7 @@ public class AccountManagement {
         String name = sc.nextLine().trim();
 
         // built-in accounts cannot be updated
-        if (name.equals("admin") || name.equals("staff")) {
+        if (name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("staff")) {
             System.out.println("Built-in accounts cannot be updated here.");
             return;
         }
@@ -215,6 +212,13 @@ public class AccountManagement {
         }
 
         String[] p = lines[index].split(",");
+
+        // a damaged line without all the basic details cannot be updated
+        if (p.length < 4) {
+            System.out.println("Account not found.");
+            return;
+        }
+
         boolean isStaff = p.length >= 7 && p[3].equals("staff");
 
         // ask for the new account details
@@ -255,7 +259,7 @@ public class AccountManagement {
         String error = checkDetails(newName, newAge, newPassword, newPhone, newEmail, isStaff);
 
         // check if the new account name is already taken
-        if (error.isEmpty() && !newName.equals(p[0]) && LoginAuthentication.nameExists(newName)) {
+        if (error.isEmpty() && !newName.equalsIgnoreCase(p[0]) && LoginAuthentication.nameExists(newName)) {
             error = "Account already exists. Please use another name.";
         }
 
@@ -266,10 +270,7 @@ public class AccountManagement {
 
         // confirm the account update
         System.out.println("------------------------------------------------------------");
-        System.out.print("Update account? (yes/no): ");
-        String confirm = sc.nextLine().trim();
-
-        if (confirm.equalsIgnoreCase("yes")) {
+        if (DataFile.askYesNo(sc, "Update account? (yes/no): ")) {
             String newLine = newName + "," + newPassword + "," + newPhone + "," + p[3];
 
             // include the additional details for staff accounts
@@ -294,7 +295,7 @@ public class AccountManagement {
         String name = sc.nextLine().trim();
 
         // built-in accounts cannot be deleted
-        if (name.equals("admin") || name.equals("staff")) {
+        if (name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("staff")) {
             System.out.println("Built-in accounts cannot be deleted.");
             return;
         }
@@ -309,10 +310,7 @@ public class AccountManagement {
 
         // confirm the account deletion
         System.out.println("------------------------------------------------------------");
-        System.out.print("Delete " + name + "? (yes/no): ");
-        String confirm = sc.nextLine().trim();
-
-        if (confirm.equalsIgnoreCase("yes")) {
+        if (DataFile.askYesNo(sc, "Delete " + name + "? (yes/no): ")) {
             saveAll(lines, index);   // saves everything except this account
             System.out.println("Account Deleted");
         } else {
@@ -360,8 +358,7 @@ public class AccountManagement {
 
     // ask if the user wants to try again
     static boolean askAgain(Scanner sc) {
-        System.out.print("Try again? (yes/no): ");
-        return sc.nextLine().trim().equalsIgnoreCase("yes");
+        return DataFile.askYesNo(sc, "Try again? (yes/no): ");
     }
 
     // check if all account details are valid
