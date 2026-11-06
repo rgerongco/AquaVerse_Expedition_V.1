@@ -58,24 +58,31 @@ public class Exhibitions {
 
         String[][] exhibits = DataFile.filter(rows, 0, category);
 
-        System.out.println();
-        System.out.println("--------------------------EXHIBITS--------------------------");
-        System.out.printf("| %-56.56s |%n", category.toUpperCase());
-        System.out.println("|----------------------------------------------------------|");
+        int choice;
 
-        for (int i = 0; i < exhibits.length; i++) {
-            System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + exhibits[i][1]);
+        // an invalid choice asks again, only 0 leaves the category
+        while (true) {
+            System.out.println();
+            System.out.println("--------------------------EXHIBITS--------------------------");
+            System.out.printf("| %-56.56s |%n", category.toUpperCase());
+            System.out.println("|----------------------------------------------------------|");
+
+            for (int i = 0; i < exhibits.length; i++) {
+                System.out.printf("| %-56.56s |%n", "[" + (i + 1) + "] " + exhibits[i][1]);
+            }
+
+            System.out.println("| [0] Exit Exhibit                                         |");
+            System.out.println("------------------------------------------------------------");
+            choice = DataFile.toInt(DataFile.ask(input, "Choice: "));
+
+            if (choice >= 0 && choice <= exhibits.length) {
+                break;
+            }
+
+            System.out.println("\n- Invalid choice.");
         }
-
-        System.out.println("| [0] Exit Exhibit                                         |");
-        System.out.println("------------------------------------------------------------");
-        int choice = DataFile.toInt(DataFile.ask(input, "Choice: "));
 
         if (choice == 0) {
-            return;
-        }
-        if (choice < 1 || choice > exhibits.length) {
-            System.out.println("\n- Invalid choice.");
             return;
         }
 
