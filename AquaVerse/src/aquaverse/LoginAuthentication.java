@@ -16,11 +16,11 @@ public class LoginAuthentication {
     // checking if the name already existed
     static boolean nameExists(String name) {
         // pre-defined admin
-        if (name.equals("admin")) {
+        if (name.equalsIgnoreCase("admin")) {
             return true;
         }
         // pre-defined staff
-        if (name.equals("staff")) {
+        if (name.equalsIgnoreCase("staff")) {
             return true;
         }
 
@@ -35,7 +35,7 @@ public class LoginAuthentication {
             while (reader.hasNextLine()) {
                 String line = reader.nextLine();
                 String[] parts = line.split(",");
-                if (parts[0].equals(name)) {
+                if (parts[0].equalsIgnoreCase(name)) {
                     reader.close();
                     return true;
                 }
@@ -108,7 +108,7 @@ public class LoginAuthentication {
             System.out.println("|\t[0] Exit\t\t|");
             System.out.println("---------------------------------");
             System.out.print("\tChoose: ");
-            String answer = sc.nextLine();
+            String answer = sc.nextLine().trim();
 
             if (answer.equals("0")) {
                 break;
@@ -123,25 +123,28 @@ public class LoginAuthentication {
                     System.out.println("|            SIGN UP            |");
                     System.out.println("--------------------------------");
                     System.out.print("\tFirst Name: ");
-                    String fname = sc.nextLine();
+                    String fname = sc.nextLine().trim();
                     System.out.print("\tLast Name: ");
-                    String lname = sc.nextLine();
+                    String lname = sc.nextLine().trim();
                     System.out.print("\tPassword: ");
                     String password = sc.nextLine();
                     System.out.print("\tConfirm Password: ");
                     String confirm = sc.nextLine();
                     System.out.print("\tPhone Number: ");
-                    String phone = sc.nextLine();
+                    String phone = sc.nextLine().trim();
                     System.out.println("--------------------------------");
                     String name = fname + " " + lname;
 
-                    if (name.isEmpty() || password.isEmpty() || confirm.isEmpty() || phone.isEmpty()) {
+                    if (fname.isEmpty() || lname.isEmpty() || password.trim().isEmpty()
+                            || confirm.isEmpty() || phone.isEmpty()) {
                         System.out.println("- All fields must be filled");
+                    } else if (name.contains(",") || password.contains(",") || phone.contains(",")) {
+                        System.out.println("- Commas are not allowed");
                     } else if (!password.equals(confirm)) {
                         System.out.println("- Passwords don't match");
                     } else if (password.length() < 8) {
                         System.out.println("- Passwords should be atleast 8 characters");
-                    } else if (phone.length() < 11 || phone.length() > 11) {
+                    } else if (phone.length() != 11 || !phone.matches("[0-9]+")) {
                         System.out.println("- Phone number should be exactly 11 numbers");
                     } else if (nameExists(name)) {
                         System.out.println("- Account already exists. Please create another one.");
@@ -159,7 +162,7 @@ public class LoginAuthentication {
                 System.out.println("|             LOGIN            |");
                 System.out.println("--------------------------------");
                 System.out.print("\tName: ");
-                String name = sc.nextLine();
+                String name = sc.nextLine().trim();
                 System.out.print("\tPassword: ");
                 String password = sc.nextLine();
                 System.out.println("--------------------------------");
