@@ -2,6 +2,7 @@ package aquaverse;
 
 import java.util.Scanner;
 
+// Cafe flowchart - basic version (multiple items, each with a quantity)
 public class Cafe {
 
     // creation of cafe
@@ -21,6 +22,7 @@ public class Cafe {
         for (int i = 0; i < cartCount; i++) {
             total += cartPrices[i] * cartQty[i];
         }
+        total = DataFile.round2(total);
 
         while (true) {
 
@@ -38,9 +40,8 @@ public class Cafe {
             System.out.printf("| %-56.56s |%n", "TOTAL: " + String.format("%.2f", total));
             System.out.println("------------------------------------------------------------");
 
-            String accept = DataFile.ask(sc, "Accept purchase? (yes/no): ");
-
-            if (!accept.equalsIgnoreCase("yes")) {
+            // only yes or no is accepted, other inputs ask again
+            if (!DataFile.askYesNo(sc, "Accept purchase? (yes/no): ")) {
                 return false;
             }
 
@@ -109,9 +110,7 @@ public class Cafe {
                 System.out.println("------------------------------------------------------------");
 
                 // cancel transaction?
-                String cancel = DataFile.ask(sc, "Cancel transaction? (yes/no): ");
-
-                if (cancel.equalsIgnoreCase("yes")) {
+                if (DataFile.askYesNo(sc, "Cancel transaction? (yes/no): ")) {
                     return false; // YES -> back to Cafe
                 }
             }
@@ -161,40 +160,52 @@ public class Cafe {
             String category = categories[choice - 1];
             String[][] items = DataFile.filter(rows, 0, category);
 
-            // show the items with prices
-            System.out.println();
-            System.out.println("----------------------------MENU----------------------------");
-            System.out.printf("| %-56.56s |%n", category.toUpperCase());
-            System.out.println("|----------------------------------------------------------|");
+            // Does the visitor order? (an invalid choice asks again, only 0 leaves the menu)
+            int itemNum;
 
-            String lastGroup = "";
+            while (true) {
 
-            for (int i = 0; i < items.length; i++) {
+                // show the items with prices
+                System.out.println();
+                System.out.println("----------------------------MENU----------------------------");
+                System.out.printf("| %-56.56s |%n", category.toUpperCase());
+                System.out.println("|----------------------------------------------------------|");
 
-                // items with a group (like Coffee or Tea) get the group name shown above them
-                if (!items[i][1].equals("-") && !items[i][1].equals(lastGroup)) {
-                    System.out.printf("| %-56.56s |%n", "[" + items[i][1] + "]");
-                    lastGroup = items[i][1];
+                String lastGroup = "";
+
+                for (int i = 0; i < items.length; i++) {
+
+                    // items with a group (like Coffee or Tea) get the group name shown above them
+                    if (!items[i][1].equals("-") && !items[i][1].equals(lastGroup)) {
+                        System.out.printf("| %-56.56s |%n", "[" + items[i][1] + "]");
+                        lastGroup = items[i][1];
+                    }
+
+                    String stockNote = "";
+
+                    if (InventoryManagement.getStock("Cafe", items[i][2]) <= 0) {
+                        stockNote = "  (OUT OF STOCK)";
+                    }
+
+                    System.out.printf("| %-56.56s |%n",
+                            "- [" + (i + 1) + "] " + items[i][2]
+                            + " - " + String.format("%.2f", DataFile.toDouble(items[i][3])) + stockNote);
+                }
+                System.out.println("| - [0] Exit                                               |");
+                System.out.println("------------------------------------------------------------");
+
+                itemNum = DataFile.toInt(DataFile.ask(sc,
+                        "Choose: ")) - 1;
+
+                if (itemNum >= -1 && itemNum < items.length) {
+                    break;
                 }
 
-                String stockNote = "";
-
-                if (InventoryManagement.getStock("Cafe", items[i][2]) <= 0) {
-                    stockNote = "  (OUT OF STOCK)";
-                }
-
-                System.out.printf("| %-56.56s |%n",
-                        "- [" + (i + 1) + "] " + items[i][2]
-                        + " - " + String.format("%.2f", DataFile.toDouble(items[i][3])) + stockNote);
+                System.out.println("\n- Invalid choice.");
             }
-            System.out.println("| - [0] Exit                                               |");
-            System.out.println("------------------------------------------------------------");
 
-            // Does the visitor order?
-            int itemNum = DataFile.toInt(DataFile.ask(sc,
-                    "Choose: ")) - 1;
-
-            if (itemNum < 0 || itemNum >= items.length) {
+            // exactly 0 = Exit
+            if (itemNum == -1) {
 
                 if (cartCount == 0) {
                     continue;
@@ -252,6 +263,18 @@ public class Cafe {
                 }
             }
 
+            // the order list is full, go straight to checkout
+            if (cartCount >= cartNames.length) {
+                System.out.println("\n- Your order is full. Please check out first.");
+                done = checkout(sc);
+
+                if (!done) {
+                    cartCount = 0; // order cancelled, clear it
+                }
+
+                continue;
+            }
+
             // add to the order
             cartNames[cartCount] = items[itemNum][2];
             cartPrices[cartCount] = price;
@@ -261,9 +284,7 @@ public class Cafe {
             System.out.println("\n- Added: " + qty + " x " + items[itemNum][2]);
 
             // ask if order more items
-            String more = DataFile.ask(sc, "Order more items? (yes/no): ");
-
-            if (more.equalsIgnoreCase("yes")) {
+            if (DataFile.askYesNo(sc, "Order more items? (yes/no): ")) {
                 continue; // back to Cafe
             }
 
